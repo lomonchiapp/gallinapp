@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+      "target": "ES2020",
+      "moduleResolution": "Bundler",
+      "strict": true,
+      "noEmit": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "baseUrl": ".",
+      "paths": {
+        "@gallinapp/types": ["packages/types/src/index.ts"]
+      }
+    }
+  }

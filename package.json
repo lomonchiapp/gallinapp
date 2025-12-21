@@ -1,0 +1,15 @@
+{
+    "name": "gallinapp",
+    "private": true,
+    "packageManager": "pnpm@9.0.0",
+    "workspaces": [
+      "apps/*",
+      "packages/*"
+    ],
+    "scripts": {
+      "dev:web": "pnpm --filter web dev",
+      "dev:mobile": "pnpm --filter mobile start",
+      "typecheck": "pnpm -r typecheck"
+    }
+  }
+  
