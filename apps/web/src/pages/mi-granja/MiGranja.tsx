@@ -147,7 +147,7 @@ export default function MiGranja() {
   const costoHuevoEstimado = 345.50
 
   return (
-    <div className="min-h-screen bg-stripe-page">
+    <div className="min-h-screen bg-stripe-canvas">
       <Header />
       
       <main className="pt-24 pb-20">
@@ -170,7 +170,7 @@ export default function MiGranja() {
                 <Button size="lg" className="h-14 px-10 text-lg font-bold shadow-premium hover:scale-105 transition-transform bg-brand-primary text-white border-none cursor-pointer">
                   <Link to="/auth/signup">Pruébalo Gratis por 14 Días</Link>
                 </Button>
-                <Button variant="outline" size="lg" className="h-14 px-8 text-lg font-semibold border-stripe-border hover:bg-stripe-page cursor-pointer" onClick={() => {
+                <Button variant="outline" size="lg" className="h-14 px-8 text-lg font-semibold border-stripe-border hover:bg-stripe-canvas cursor-pointer" onClick={() => {
                   document.getElementById('simulador')?.scrollIntoView({ behavior: 'smooth' })
                 }}>
                   Ver Demo Interactiva
@@ -511,7 +511,7 @@ export default function MiGranja() {
           </div>
 
           {/* Value Propositions */}
-          <div className="bg-stripe-page/40 rounded-[3rem] p-10 md:p-16 border border-stripe-border relative overflow-hidden">
+          <div className="bg-stripe-canvas/40 rounded-[3rem] p-10 md:p-16 border border-stripe-border relative overflow-hidden">
             <div className="absolute top-0 right-0 w-96 h-96 bg-brand-primary/5 rounded-full blur-3xl -mr-48 -mt-48"></div>
             <SectionHeader
               title="Por qué elegir GallinApp para tu granja"

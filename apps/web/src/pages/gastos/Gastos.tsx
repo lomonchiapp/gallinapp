@@ -54,7 +54,7 @@ export default function Gastos() {
   }, [assignment.cantidad])
 
   return (
-    <div className="min-h-screen bg-stripe-page">
+    <div className="min-h-screen bg-stripe-canvas">
       <Header />
       
       <main className="pt-24 pb-20">
@@ -76,7 +76,7 @@ export default function Gastos() {
                 <Button size="lg" className="h-14 px-10 text-lg font-bold shadow-premium hover:scale-105 transition-transform bg-brand-primary text-white border-none cursor-pointer" asChild>
                   <Link to="/auth/signup">Empieza a Ahorrar Hoy</Link>
                 </Button>
-                <Button variant="outline" size="lg" className="h-14 px-8 text-lg font-semibold border-stripe-border hover:bg-stripe-page cursor-pointer" onClick={() => {
+                <Button variant="outline" size="lg" className="h-14 px-8 text-lg font-semibold border-stripe-border hover:bg-stripe-canvas cursor-pointer" onClick={() => {
                   document.getElementById('simulador-gastos')?.scrollIntoView({ behavior: 'smooth' })
                 }}>
                   Ver Cómo Funciona

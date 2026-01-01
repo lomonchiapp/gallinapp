@@ -46,7 +46,7 @@ export default function Facturacion() {
   ]
 
   return (
-    <div className="min-h-screen bg-stripe-page">
+    <div className="min-h-screen bg-stripe-canvas">
       <Header />
       
       <main className="pt-24 pb-20">
@@ -72,7 +72,7 @@ export default function Facturacion() {
                 <Button size="lg" className="h-14 px-10 text-lg font-bold shadow-premium hover:scale-105 transition-transform bg-brand-primary text-white border-none cursor-pointer" asChild>
                   <Link to="/auth/signup">Obtener GallinApp Pro</Link>
                 </Button>
-                <Button variant="outline" size="lg" className="h-14 px-8 text-lg font-semibold border-stripe-border hover:bg-stripe-page cursor-pointer" onClick={() => {
+                <Button variant="outline" size="lg" className="h-14 px-8 text-lg font-semibold border-stripe-border hover:bg-stripe-canvas cursor-pointer" onClick={() => {
                   document.getElementById('simulador-facturacion')?.scrollIntoView({ behavior: 'smooth' })
                 }}>
                   Ver Modelo de Factura
@@ -256,7 +256,8 @@ export default function Facturacion() {
               title="Más que solo facturas"
               subtitle="Herramientas profesionales para que te enfoques en producir, nosotros nos encargamos del papeleo."
               align="center"
-              className="mb-16 text-white"
+              className="mb-16"
+              dark={true}
             />
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
@@ -269,7 +270,7 @@ export default function Facturacion() {
                   <div className="w-12 h-12 rounded-xl bg-brand-primary flex items-center justify-center mb-6">
                     <feat.icon className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="font-bold mb-3 text-lg">{feat.title}</h3>
+                  <h3 className="font-bold mb-3 text-lg text-white">{feat.title}</h3>
                   <p className="text-sm text-slate-400 leading-relaxed font-medium">{feat.description}</p>
                 </div>
               ))}

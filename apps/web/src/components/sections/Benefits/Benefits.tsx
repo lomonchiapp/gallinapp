@@ -44,6 +44,7 @@ export function Benefits() {
             description="Miles de productores confían en Gallinapp para llevar su negocio al siguiente nivel"
             align="center"
             className="mb-8 md:mb-12"
+            dark={true}
           />
 
           {/* Stats bar */}

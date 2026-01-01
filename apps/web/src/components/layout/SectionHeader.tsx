@@ -14,6 +14,7 @@ interface SectionHeaderProps {
   subtitle?: string // Alias para description
   align?: "left" | "center" | "right"
   className?: string
+  dark?: boolean // Nueva prop para fondos oscuros
 }
 
 export function SectionHeader({
@@ -24,6 +25,7 @@ export function SectionHeader({
   subtitle,
   align = "center",
   className,
+  dark = false,
 }: SectionHeaderProps) {
   const finalDescription = description || subtitle
   const alignClasses = {
@@ -49,7 +51,10 @@ export function SectionHeader({
         </div>
       )}
 
-      <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-6 leading-[1.1] tracking-tight text-secondary-600">
+      <h2 className={cn(
+        "text-3xl md:text-4xl lg:text-5xl font-extrabold mb-6 leading-[1.1] tracking-tight",
+        dark ? "text-white" : "text-secondary-600"
+      )}>
         {typeof title === "string" ? (
           <>
             {title}
@@ -65,7 +70,10 @@ export function SectionHeader({
       </h2>
 
       {finalDescription && (
-        <p className="text-base md:text-lg text-secondary-400 max-w-2xl mx-auto leading-relaxed font-medium">
+        <p className={cn(
+          "text-base md:text-lg max-w-2xl mx-auto leading-relaxed font-medium",
+          dark ? "text-slate-300" : "text-secondary-400"
+        )}>
           {finalDescription}
         </p>
       )}
