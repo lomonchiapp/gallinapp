@@ -6,6 +6,8 @@ import Signup from './pages/auth/Signup';
 import TrialCheckout from './pages/checkout/TrialCheckout';
 import MiGranja from './pages/mi-granja/MiGranja';
 import Gastos from './pages/gastos/Gastos';
+import Ventas from './pages/ventas/Ventas';
+import Facturacion from './pages/facturacion/Facturacion';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -28,6 +30,8 @@ function App() {
             <Route path="/auth/signup" element={<Signup />} />
             <Route path="/mi-granja" element={<MiGranja />} />
             <Route path="/gastos" element={<Gastos />} />
+            <Route path="/ventas" element={<Ventas />} />
+            <Route path="/facturacion" element={<Facturacion />} />
             
             {/* Protected Routes */}
             <Route 
