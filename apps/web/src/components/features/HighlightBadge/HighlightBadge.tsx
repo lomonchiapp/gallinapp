@@ -1,9 +1,10 @@
 import { cn } from "@/lib/utils"
-import { LucideIcon } from "lucide-react"
+import { type LucideProps } from "lucide-react"
+import { type ComponentType } from "react"
 
 interface HighlightBadgeProps {
   text: string
-  icon: LucideIcon
+  icon: ComponentType<LucideProps>
   color: string
   className?: string
 }

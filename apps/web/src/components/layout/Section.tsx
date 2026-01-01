@@ -1,68 +1,47 @@
 import { cn } from "@/lib/utils"
-import { ReactNode, CSSProperties } from "react"
+import { ReactNode } from "react"
 
 interface SectionProps {
   children: ReactNode
   id?: string
-  background?: string | "gradient" | "white" | "primary" | "neutral"
+  background?: "canvas" | "white" | "dark" | "transparent"
   padding?: "none" | "sm" | "md" | "lg" | "xl"
   className?: string
-  style?: CSSProperties
 }
 
 const backgroundClasses = {
-  gradient: "bg-gradient-to-b from-neutral-50 via-white to-neutral-50",
+  canvas: "bg-stripe-canvas",
   white: "bg-white",
-  primary: "bg-primary-500",
-  neutral: "bg-neutral-50",
+  dark: "bg-brand-dark text-white",
+  transparent: "bg-transparent",
 }
 
 const paddingClasses = {
   none: "",
-  sm: "py-12 md:py-16",
-  md: "py-20 md:py-24",
-  lg: "py-24 md:py-32",
-  xl: "py-32 md:py-40",
+  sm: "py-12 md:py-20",
+  md: "py-20 md:py-32",
+  lg: "py-32 md:py-48",
+  xl: "py-40 md:py-64",
 }
 
 export function Section({
   children,
   id,
-  background = "white",
-  padding = "lg",
+  background = "canvas",
+  padding = "md",
   className,
-  style,
 }: SectionProps) {
-  const bgClass =
-    typeof background === "string" && background in backgroundClasses
-      ? backgroundClasses[background as keyof typeof backgroundClasses]
-      : ""
-
   return (
     <section
       id={id}
       className={cn(
-        "relative overflow-hidden",
-        bgClass,
+        "relative w-full",
+        backgroundClasses[background],
         paddingClasses[padding],
         className
       )}
-      style={
-        typeof background === "string" && !(background in backgroundClasses)
-          ? { backgroundColor: background, ...style }
-          : style
-      }
     >
       {children}
     </section>
   )
 }
-
-
-
-
-
-
-
-
-

@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+/* Variables CSS para tema light (por defecto) */
+:root {
+  /* Colores primarios */
+  --color-primary-500: #345DAD;
+  --color-secondary-500: #35354C;
+  
+  /* Backgrounds */
+  --color-background-primary: #FFFFFF;
+  --color-background-secondary: #F8F9FA;
+  
+  /* Texto */
+  --color-text-primary: #202124;
+  --color-text-secondary: #5F6368;
+  
+  /* Bordes */
+  --color-border-light: #E8EAED;
+  --color-border-medium: #DADCE0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Archivo', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: var(--color-text-primary);
+  background-color: var(--color-background-secondary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+

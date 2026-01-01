@@ -27,7 +27,8 @@
     /* Paths */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@gallinapp/types": ["../../packages/types/index.ts"]
     }
   },
   "include": ["src"]

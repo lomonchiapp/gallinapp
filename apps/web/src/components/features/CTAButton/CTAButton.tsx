@@ -1,10 +1,11 @@
 import { cn } from "@/lib/utils"
-import { LucideIcon, ArrowRight } from "lucide-react"
+import { ArrowRight, type LucideProps } from "lucide-react"
+import { type ComponentType } from "react"
 
 interface CTAButtonProps {
   text: string
   variant?: "primary" | "secondary" | "outline"
-  icon?: LucideIcon
+  icon?: ComponentType<LucideProps>
   onClick?: () => void
   className?: string
 }

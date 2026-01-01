@@ -46,13 +46,13 @@ export function SectionHeader({
         </div>
       )}
 
-      <h2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 md:mb-6 leading-tight">
+      <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-6 leading-[1.1] tracking-tight text-secondary-600">
         {typeof title === "string" ? (
           <>
             {title}
             {titleHighlight && (
-              <span className="block mt-2 text-primary-500">
-                {titleHighlight}
+              <span className="text-primary-500">
+                {" "}{titleHighlight}
               </span>
             )}
           </>
@@ -62,7 +62,7 @@ export function SectionHeader({
       </h2>
 
       {description && (
-        <p className="text-lg md:text-xl text-neutral-600 max-w-3xl mx-auto leading-relaxed">
+        <p className="text-base md:text-lg text-secondary-400 max-w-2xl mx-auto leading-relaxed font-medium">
           {description}
         </p>
       )}

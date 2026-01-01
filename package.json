@@ -1,15 +1,31 @@
 {
-    "name": "gallinapp",
-    "private": true,
-    "packageManager": "pnpm@9.0.0",
-    "workspaces": [
-      "apps/*",
-      "packages/*"
-    ],
-    "scripts": {
-      "dev:web": "pnpm --filter web dev",
-      "dev:mobile": "pnpm --filter mobile start",
-      "typecheck": "pnpm -r typecheck"
+  "name": "gallinapp",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "pnpm": {
+    "overrides": {
+      "react": "19.1.0",
+      "react-dom": "19.1.0",
+      "@types/react": "~19.1.0"
     }
+  },
+  "scripts": {
+    "dev:web": "pnpm --filter web dev",
+    "dev:mobile": "pnpm --filter mobile start",
+    "typecheck": "pnpm -r typecheck",
+    "clean:metadata": "bash ./clean-metadata.sh",
+    "clean:dotfiles": "bash ./clean-dot-underscore.sh",
+    "dev:admin": "pnpm --filter admin dev"
+  },
+  "devDependencies": {
+    "metro": "0.83.3",
+    "metro-config": "0.83.3",
+    "metro-core": "^0.83.3",
+    "metro-resolver": "^0.83.3",
+    "metro-runtime": "^0.83.3"
   }
-  
+}

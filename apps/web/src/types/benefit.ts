@@ -1,7 +1,8 @@
-import { LucideIcon } from "lucide-react"
+import { type LucideProps } from "lucide-react"
+import { type ComponentType } from "react"
 
 export interface Benefit {
-  icon: LucideIcon
+  icon: ComponentType<LucideProps>
   title: string
   description: string
   metric: string

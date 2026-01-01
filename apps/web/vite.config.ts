@@ -9,6 +9,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@gallinapp/types': path.resolve(__dirname, '../../packages/types/index.ts'),
+      '@gallinapp/assets': path.resolve(__dirname, '../../packages/assets'),
     },
+    dedupe: ['react', 'react-dom'],
   },
 })

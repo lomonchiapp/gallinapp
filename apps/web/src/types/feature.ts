@@ -1,4 +1,5 @@
-import { LucideIcon } from "lucide-react"
+import { type LucideProps } from "lucide-react"
+import { type ComponentType } from "react"
 
 export interface Stat {
   label: string
@@ -6,7 +7,7 @@ export interface Stat {
 }
 
 export interface MainFeature {
-  icon: LucideIcon
+  icon: ComponentType<LucideProps>
   title: string
   description: string
   badge: string
@@ -16,7 +17,7 @@ export interface MainFeature {
 }
 
 export interface SecondaryFeature {
-  icon: LucideIcon
+  icon: ComponentType<LucideProps>
   title: string
   description: string
   badge: string
@@ -24,7 +25,7 @@ export interface SecondaryFeature {
 }
 
 export interface Highlight {
-  icon: LucideIcon
+  icon: ComponentType<LucideProps>
   text: string
   color: string
 }

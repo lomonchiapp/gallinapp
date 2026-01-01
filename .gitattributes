@@ -1,0 +1,38 @@
+# Git attributes para prevenir archivos de metadata de macOS
+
+# Ignorar archivos de metadata en diffs
+._* binary
+.!* binary
+.DS_Store binary
+
+# Normalización de finales de línea
+* text=auto eol=lf
+
+# Archivos específicos
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+
+# Archivos binarios
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.mov binary
+*.mp4 binary
+*.mp3 binary
+*.flv binary
+*.fla binary
+*.swf binary
+*.gz binary
+*.zip binary
+*.7z binary
+*.ttf binary
+*.eot binary
+*.woff binary
+*.woff2 binary

@@ -2,6 +2,13 @@
  * Tipos para el sistema multi-tenant de Gallinapp
  */
 
+import { 
+  SubscriptionPlan, 
+  SubscriptionStatus, 
+  SubscriptionLimits,
+  SUBSCRIPTION_LIMITS 
+} from './subscription';
+
 export interface Organization {
   id: string;
   name: string;
@@ -68,36 +75,6 @@ export interface Organization {
   isActive: boolean;
 }
 
-export enum SubscriptionPlan {
-  FREE = 'free',
-  BASIC = 'basic',
-  PRO = 'pro',
-  ENTERPRISE = 'enterprise'
-}
-
-export enum SubscriptionStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  CANCELLED = 'cancelled',
-  PAST_DUE = 'past_due',
-  TRIALING = 'trialing'
-}
-
-export interface SubscriptionLimits {
-  maxLotes: number;
-  maxUsers: number;
-  maxStorage: number; // MB
-  maxTransactions: number; // por mes
-  features: {
-    analytics: boolean;
-    exports: boolean;
-    apiAccess: boolean;
-    customReports: boolean;
-    multiLocation: boolean;
-    integrations: boolean;
-  };
-}
-
 export interface OrganizationUser {
   id: string;
   organizationId: string;
@@ -155,65 +132,7 @@ export interface UserOrganizations {
   updatedAt: Date;
 }
 
-// Plan limits configuration
-export const SUBSCRIPTION_LIMITS: Record<SubscriptionPlan, SubscriptionLimits> = {
-  [SubscriptionPlan.FREE]: {
-    maxLotes: 1,
-    maxUsers: 1,
-    maxStorage: 100, // 100MB
-    maxTransactions: 50,
-    features: {
-      analytics: false,
-      exports: false,
-      apiAccess: false,
-      customReports: false,
-      multiLocation: false,
-      integrations: false,
-    }
-  },
-  [SubscriptionPlan.BASIC]: {
-    maxLotes: 5,
-    maxUsers: 3,
-    maxStorage: 1000, // 1GB
-    maxTransactions: 500,
-    features: {
-      analytics: true,
-      exports: true,
-      apiAccess: false,
-      customReports: false,
-      multiLocation: false,
-      integrations: false,
-    }
-  },
-  [SubscriptionPlan.PRO]: {
-    maxLotes: 50,
-    maxUsers: 10,
-    maxStorage: 5000, // 5GB
-    maxTransactions: 5000,
-    features: {
-      analytics: true,
-      exports: true,
-      apiAccess: true,
-      customReports: true,
-      multiLocation: true,
-      integrations: false,
-    }
-  },
-  [SubscriptionPlan.ENTERPRISE]: {
-    maxLotes: -1, // Unlimited
-    maxUsers: -1, // Unlimited
-    maxStorage: -1, // Unlimited
-    maxTransactions: -1, // Unlimited
-    features: {
-      analytics: true,
-      exports: true,
-      apiAccess: true,
-      customReports: true,
-      multiLocation: true,
-      integrations: true,
-    }
-  }
-};
+// Fin de archivo
 
 
 
