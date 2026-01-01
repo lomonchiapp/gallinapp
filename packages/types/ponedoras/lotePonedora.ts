@@ -1,5 +1,5 @@
-import { TipoAve } from "../enums";
-import { LoteBase } from "../loteBase";
+import type { TipoAve } from "../enums";
+import type { LoteBase } from "../loteBase";
 
 /**
  * Información de costos heredados de la fase de levante

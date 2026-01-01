@@ -2,7 +2,7 @@
  * Tipos para Account (perfil de usuario) separado de autenticación
  */
 
-import { Subscription } from './subscription';
+import type { Subscription } from './subscription';
 
 export interface Account {
   uid: string; // Mismo que Firebase Auth uid
@@ -63,7 +63,7 @@ export interface FarmAccess {
   isActive: boolean;
 }
 
-export enum FarmRole {
+export const enum FarmRole {
   OWNER = 'OWNER',       // Propietario - control total
   ADMIN = 'ADMIN',       // Administrador - gestión completa
   MANAGER = 'MANAGER',   // Gerente - operaciones diarias
@@ -76,7 +76,7 @@ export interface FarmPermission {
   conditions?: Record<string, any>; // Condiciones específicas (ej: solo ciertos lotes)
 }
 
-export enum FarmResource {
+export const enum FarmResource {
   LOTES = 'lotes',
   PONEDORAS = 'ponedoras',
   LEVANTES = 'levantes', 
@@ -88,7 +88,7 @@ export enum FarmResource {
   COLABORADORES = 'colaboradores',
 }
 
-export enum FarmAction {
+export const enum FarmAction {
   CREATE = 'create',
   READ = 'read',  
   UPDATE = 'update',

@@ -1,4 +1,4 @@
-import { UnidadMedida } from "../enums";
+import type { UnidadMedida } from "../enums";
 
 
 export interface Articulo {

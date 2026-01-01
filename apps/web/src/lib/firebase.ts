@@ -8,12 +8,12 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBYQxBE85YnWANj7lxuyCNVM5Fu0ZqWWt8",
-  authDomain: "gallinapp-ac9d8.firebaseapp.com",
-  projectId: "gallinapp-ac9d8",
-  storageBucket: "gallinapp-ac9d8.firebasestorage.app",
-  messagingSenderId: "216089169768",
-  appId: "1:216089169768:web:35841d73e72caceb5ad0dd"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // Inicializar Firebase

@@ -1,15 +1,15 @@
 import { cn } from "@/lib/utils"
-import { ReactNode } from "react"
+import type { ReactNode } from "react"
 
 interface SectionProps {
   children: ReactNode
   id?: string
-  background?: "canvas" | "white" | "dark" | "transparent"
+  background?: "canvas" | "white" | "dark" | "transparent" | string
   padding?: "none" | "sm" | "md" | "lg" | "xl"
   className?: string
 }
 
-const backgroundClasses = {
+const backgroundClasses: Record<string, string> = {
   canvas: "bg-stripe-canvas",
   white: "bg-white",
   dark: "bg-brand-dark text-white",
@@ -31,15 +31,19 @@ export function Section({
   padding = "md",
   className,
 }: SectionProps) {
+  const backgroundClass = backgroundClasses[background] || (background.startsWith('#') ? '' : background)
+  const backgroundStyle = background.startsWith('#') ? { backgroundColor: background } : undefined
+  
   return (
     <section
       id={id}
       className={cn(
         "relative w-full",
-        backgroundClasses[background],
+        backgroundClass,
         paddingClasses[padding],
         className
       )}
+      style={backgroundStyle}
     >
       {children}
     </section>

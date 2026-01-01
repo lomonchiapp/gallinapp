@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils"
-import { ReactNode } from "react"
+import type { ReactNode } from "react"
 import { Badge } from "@/components/ui/badge"
 
 interface SectionHeaderProps {
@@ -11,6 +11,7 @@ interface SectionHeaderProps {
   title: string | ReactNode
   titleHighlight?: string
   description?: string
+  subtitle?: string // Alias para description
   align?: "left" | "center" | "right"
   className?: string
 }
@@ -20,9 +21,11 @@ export function SectionHeader({
   title,
   titleHighlight,
   description,
+  subtitle,
   align = "center",
   className,
 }: SectionHeaderProps) {
+  const finalDescription = description || subtitle
   const alignClasses = {
     left: "text-left items-start",
     center: "text-center items-center",
@@ -61,9 +64,9 @@ export function SectionHeader({
         )}
       </h2>
 
-      {description && (
+      {finalDescription && (
         <p className="text-base md:text-lg text-secondary-400 max-w-2xl mx-auto leading-relaxed font-medium">
-          {description}
+          {finalDescription}
         </p>
       )}
     </div>

@@ -1,4 +1,4 @@
-import { TipoAve } from './enums';
+import type { TipoAve } from './enums';
 
 export interface PesoRegistro {
   id: string;

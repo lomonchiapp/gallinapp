@@ -3,14 +3,14 @@
  * Single Source of Truth para datos de suscripción
  */
 
-export enum SubscriptionPlan {
+export const enum SubscriptionPlan {
   FREE = 'free',
   BASIC = 'basic',
   PRO = 'pro',
   ENTERPRISE = 'enterprise'
 }
 
-export enum SubscriptionStatus {
+export const enum SubscriptionStatus {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
   CANCELLED = 'cancelled',

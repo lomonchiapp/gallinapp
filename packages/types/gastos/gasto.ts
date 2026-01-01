@@ -1,4 +1,4 @@
-import { CategoriaGasto, TipoAve } from "../enums";
+import type { CategoriaGasto, TipoAve } from "../enums";
 
 export interface Gasto {
     id: string;

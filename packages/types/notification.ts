@@ -2,7 +2,7 @@
  * Tipos para el sistema de notificaciones
  */
 
-export enum NotificationType {
+export const enum NotificationType {
   // Alertas de producción
   MORTALIDAD_ALTA = 'MORTALIDAD_ALTA',
   PRODUCCION_BAJA = 'PRODUCCION_BAJA',
@@ -34,20 +34,20 @@ export enum NotificationType {
   CUSTOM = 'CUSTOM',
 }
 
-export enum NotificationPriority {
+export const enum NotificationPriority {
   LOW = 'LOW',
   MEDIUM = 'MEDIUM',
   HIGH = 'HIGH',
   CRITICAL = 'CRITICAL',
 }
 
-export enum NotificationStatus {
+export const enum NotificationStatus {
   UNREAD = 'UNREAD',
   READ = 'READ',
   ARCHIVED = 'ARCHIVED',
 }
 
-export enum NotificationCategory {
+export const enum NotificationCategory {
   PRODUCTION = 'PRODUCTION',
   FINANCIAL = 'FINANCIAL',
   SYSTEM = 'SYSTEM',

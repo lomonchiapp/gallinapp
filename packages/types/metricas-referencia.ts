@@ -2,7 +2,7 @@
  * Tipos para métricas de referencia y benchmarks
  */
 
-import { TipoAve } from './enums';
+import type { TipoAve } from './enums';
 
 /**
  * Métrica de peso por edad para una raza específica

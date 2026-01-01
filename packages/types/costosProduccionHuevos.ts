@@ -3,13 +3,13 @@
  * Maneja las dos fases de costos de gallinas ponedoras según requerimientos del cliente
  */
 
-import { CategoriaGasto } from './enums';
-import { Gasto } from './gastos/gasto';
+import type { CategoriaGasto } from './enums';
+import type { Gasto } from './gastos/gasto';
 
 /**
  * Enum para las fases de costo de gallinas ponedoras
  */
-export enum FaseCosto {
+export const enum FaseCosto {
   INICIAL = 'inicial',      // Desde nacimiento hasta inicio de postura
   PRODUCTIVA = 'productiva' // Durante la etapa de producción de huevos
 }

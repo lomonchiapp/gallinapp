@@ -2,7 +2,7 @@
  * Interfaz base para todos los tipos de lotes
  */
 
-import { EstadoLote, TipoAve } from "./enums";
+import type { EstadoLote, TipoAve } from "./enums";
 
 export interface LoteBase {
     id: string;

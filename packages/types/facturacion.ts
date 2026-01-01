@@ -2,10 +2,10 @@
  * Tipos para el sistema de facturación
  */
 
-import { TipoAve } from './enums';
+import type { TipoAve } from './enums';
 
 // Tipos de productos vendibles
-export enum TipoProducto {
+export const enum TipoProducto {
   LOTE_COMPLETO = 'LOTE_COMPLETO',
   UNIDADES_GALLINAS_PONEDORAS = 'UNIDADES_GALLINAS_PONEDORAS',
   UNIDADES_POLLOS_LEVANTE = 'UNIDADES_POLLOS_LEVANTE',
@@ -15,7 +15,7 @@ export enum TipoProducto {
 }
 
 // Tipos de venta
-export enum TipoVenta {
+export const enum TipoVenta {
   LOTE_COMPLETO = 'LOTE_COMPLETO',
   UNIDADES_AVES = 'UNIDADES_AVES',
   UNIDADES_HUEVOS = 'UNIDADES_HUEVOS',
@@ -23,7 +23,7 @@ export enum TipoVenta {
 }
 
 // Unidad de venta para huevos
-export enum UnidadVentaHuevos {
+export const enum UnidadVentaHuevos {
   UNIDADES = 'UNIDADES',
   CAJAS = 'CAJAS',
 }
@@ -136,7 +136,7 @@ export interface Factura {
 }
 
 // Estados de la factura
-export enum EstadoFactura {
+export const enum EstadoFactura {
   BORRADOR = 'BORRADOR',
   EMITIDA = 'EMITIDA',
   PAGADA = 'PAGADA',
@@ -144,7 +144,7 @@ export enum EstadoFactura {
 }
 
 // Métodos de pago
-export enum MetodoPago {
+export const enum MetodoPago {
   EFECTIVO = 'EFECTIVO',
   TRANSFERENCIA = 'TRANSFERENCIA',
   CHEQUE = 'CHEQUE',

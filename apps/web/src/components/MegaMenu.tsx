@@ -17,7 +17,7 @@ interface MegaMenuProps {
 export function MegaMenu({ title, align = "center", items }: MegaMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const alignClasses = {
     left: "left-0",

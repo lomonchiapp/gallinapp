@@ -3,26 +3,26 @@
  */
 
 // Enums para autenticación
-export enum AuthStatus {
+export const enum AuthStatus {
   LOADING = 'loading',
   AUTHENTICATED = 'authenticated',
   UNAUTHENTICATED = 'unauthenticated',
 }
 
-export enum UserRole {
+export const enum UserRole {
   ADMIN = 'ADMIN',
   OPERADOR = 'OPERADOR',
 }
 
 // Enums para tipos de aves
-export enum TipoAve {
+export const enum TipoAve {
   PONEDORA = 'gallina_ponedora',
   POLLO_ENGORDE = 'pollos_engorde',
   POLLO_LEVANTE = 'pollos_levante',
 }
 
 // Enums para gastos
-export enum CategoriaGasto {
+export const enum CategoriaGasto {
   FEED = 'Alimento',
   MEDICATION = 'Medicacion',
   MAINTENANCE = 'Mantenimiento',
@@ -30,7 +30,7 @@ export enum CategoriaGasto {
 }
 
 // Enums para razas
-export enum RazaGallina {
+export const enum RazaGallina {
   COOB = 'COOB',
   W80 = 'W80',
   HYLINE_BROWN = 'HYLINE_BROWN',
@@ -40,7 +40,7 @@ export enum RazaGallina {
   OTRA = 'OTRA',
 }
 
-export enum RazaPollo {
+export const enum RazaPollo {
   ROSS_308 = 'ROSS_308',
   COBB_500 = 'COBB_500',
   HUBBARD = 'HUBBARD',
@@ -49,7 +49,7 @@ export enum RazaPollo {
 }
 
 // Enums para estado de lotes
-export enum EstadoLote {
+export const enum EstadoLote {
   ACTIVO = 'ACTIVO',
   FINALIZADO = 'FINALIZADO',
   CANCELADO = 'CANCELADO',
@@ -58,13 +58,13 @@ export enum EstadoLote {
 }
 
 // Enums para subtipo de levante
-export enum SubtipoLevante {
+export const enum SubtipoLevante {
   LEVANTE_ENGORDE = 'LEVANTE_ENGORDE',       // Pollitos para engorde
   LEVANTE_PONEDORAS = 'LEVANTE_PONEDORAS',   // Pollitas para producción de huevos
 }
 
 // Enums para unidades de medida
-export enum UnidadMedida {
+export const enum UnidadMedida {
   UNIDAD = 'Unidad',
   LIBRA = 'Libra',
   KILOGRAMO = 'Kilogramo',
@@ -75,32 +75,32 @@ export enum UnidadMedida {
 }
 
 // Tipo de Articulos
-export enum TipoPrecioArticulo {
+export const enum TipoPrecioArticulo {
   FIJO = 'FIJO',
   VARIABLE = 'VARIABLE',
 }
 
 // Enums para ingresos
-export enum TipoIngreso {
+export const enum TipoIngreso {
   VENTA_HUEVOS = 'VENTA_HUEVOS',
   VENTA_GALLINAS = 'VENTA_GALLINAS',
   OTRO = 'OTRO',
 }
 
-export enum TipoIngresoIsraeli {
+export const enum TipoIngresoIsraeli {
   VENTA_POLLOS = 'VENTA_POLLOS',
   OTRO = 'OTRO',
 }
 
 // Enums para huevos
-export enum Tamano {
+export const enum Tamano {
   PEQUENO = 'PEQUEÑO',
   MEDIANO = 'MEDIANO',
   GRANDE = 'GRANDE',
   EXTRA_GRANDE = 'EXTRA_GRANDE',
 }
 
-export enum Calidad {
+export const enum Calidad {
   PRIMERA = 'PRIMERA',
   SEGUNDA = 'SEGUNDA',
   TERCERA = 'TERCERA',

@@ -2,7 +2,8 @@
  * Tipos para colaboradores y sistema de acceso por farmCode
  */
 
-import { FarmPermission, FarmRole } from './account';
+import type { FarmPermission } from './account';
+import { FarmRole } from './account';
 
 export interface Collaborator {
   id: string;
@@ -46,7 +47,7 @@ export interface FarmAccessRequest {
   expiresAt: Date; // Las solicitudes expiran después de 7 días
 }
 
-export enum AccessRequestStatus {
+export const enum AccessRequestStatus {
   PENDING = 'PENDING',     // Esperando revisión
   APPROVED = 'APPROVED',   // Aprobada - colaborador agregado
   REJECTED = 'REJECTED',   // Rechazada
