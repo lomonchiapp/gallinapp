@@ -1,10 +1,28 @@
 /**
  * Tipos para colaboradores y sistema de acceso por farmCode
+ * 
+ * TERMINOLOGÍA IMPORTANTE:
+ * ========================
+ * - "Miembros" (members): Todos los usuarios con acceso a la granja, incluye al OWNER
+ * - "Colaboradores" (collaborators): Solo usuarios invitados con roles ADMIN, MANAGER o VIEWER
+ * 
+ * El OWNER es el propietario de la granja, NO un colaborador.
+ * Un colaborador es alguien que fue invitado a participar en la granja.
+ * 
+ * Roles disponibles:
+ * - OWNER: Propietario de la granja (único, no es colaborador)
+ * - ADMIN: Administrador con acceso casi completo
+ * - MANAGER: Gerente de operaciones diarias
+ * - VIEWER: Solo visualización de datos
  */
 
 import type { FarmPermission } from './account';
 import { FarmRole } from './account';
 
+/**
+ * Representa a un usuario con acceso a una granja.
+ * Puede ser el OWNER (propietario) o un colaborador invitado (ADMIN, MANAGER, VIEWER).
+ */
 export interface Collaborator {
   id: string;
   farmId: string;
@@ -55,13 +73,23 @@ export const enum AccessRequestStatus {
   CANCELLED = 'CANCELLED'  // Cancelada por el solicitante
 }
 
-// Helper types para gestión
+/**
+ * Resumen de colaboradores de una granja.
+ * 
+ * NOTA: totalCollaborators NO incluye al OWNER.
+ * Solo cuenta usuarios con roles: ADMIN, MANAGER, VIEWER
+ */
 export interface FarmCollaboratorSummary {
   farmId: string;
+  /** Número de colaboradores (excluye al owner) */
   totalCollaborators: number;
+  /** Conteo por rol (solo colaboradores, no owner) */
   collaboratorsByRole: Record<FarmRole, number>;
+  /** Solicitudes de acceso pendientes */
   pendingRequests: number;
+  /** Si se alcanzó el límite del plan */
   isAtLimit: boolean;
+  /** Límite máximo de colaboradores según el plan */
   limit: number;
 }
 

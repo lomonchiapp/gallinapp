@@ -36,4 +36,7 @@ export * from './notification';
 export * from './facturacion';
 // Métricas de Referencia
 export * from './metricas-referencia';
-
+// Administradores del SaaS
+export * from './admin';
+// Configuraciones (Settings)
+export * from './settings';
