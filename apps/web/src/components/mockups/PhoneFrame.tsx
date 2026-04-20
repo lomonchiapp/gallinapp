@@ -10,6 +10,11 @@ interface PhoneFrameProps {
   statusBar?: boolean
   /** Etiqueta opcional sobre el frame (ej: nombre de modulo) */
   label?: string
+  /**
+   * Estilo del label. `light` para fondos oscuros (usa white/10 + borde y
+   * texto blanco), `dark` para fondos claros (chip dark-mode clasico).
+   */
+  labelVariant?: "dark" | "light"
   /** Inclinacion 3D del frame */
   tilt?: "none" | "left" | "right"
   /** Animacion de flotado */
@@ -26,6 +31,7 @@ export function PhoneFrame({
   bezel = "dark",
   statusBar = true,
   label,
+  labelVariant = "dark",
   tilt = "none",
   floating = false,
 }: PhoneFrameProps) {
@@ -39,7 +45,14 @@ export function PhoneFrame({
   return (
     <div className={cn("relative inline-block", floating && "animate-float", className)}>
       {label && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 rounded-full bg-brand-dark text-white text-[10px] font-bold uppercase tracking-wider shadow-lg">
+        <div
+          className={cn(
+            "absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-lg backdrop-blur-md",
+            labelVariant === "light"
+              ? "bg-white/15 border border-white/25 text-white"
+              : "bg-brand-dark border border-brand-dark text-white"
+          )}
+        >
           {label}
         </div>
       )}

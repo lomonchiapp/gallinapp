@@ -3,8 +3,10 @@ import { Link, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/shared/Logo"
 import { cn } from "@/lib/utils"
-import { Menu, X, GraduationCap, BookOpen, FileText, HelpCircle, LayoutGrid, Receipt, Tags, Activity, Zap, Boxes, BarChart3, FileBarChart, Globe, LogOut, User as UserIcon } from "lucide-react"
+import { Menu, X, GraduationCap, BookOpen, FileText, HelpCircle, LayoutGrid, Receipt, Tags, LogOut, User as UserIcon } from "lucide-react"
 import { MegaMenu } from "./MegaMenu"
+import { FeaturesMegaMenu } from "./FeaturesMegaMenu"
+import { featuresFlatList } from "./features-menu-data"
 import { LanguageSelector } from "./shared/LanguageSelector"
 import { useAuth } from "../context/AuthContext"
 
@@ -62,44 +64,9 @@ const modulesMenuItems = [
   }
 ]
 
-const featuresMenuItems = [
-  {
-    title: "Bienestar Animal",
-    description: "Sistema de monitoreo y alertas de salud en tiempo real para tus aves.",
-    icon: Activity,
-    href: "#bienestar"
-  },
-  {
-    title: "IA Predictiva",
-    description: "Algoritmos avanzados para predecir producción, mortalidad y rentabilidad.",
-    icon: Zap,
-    href: "#ia"
-  },
-  {
-    title: "Inventario Pro",
-    description: "Control inteligente de suministros, alimentos y stock de productos.",
-    icon: Boxes,
-    href: "#inventario"
-  },
-  {
-    title: "Analítica Pro",
-    description: "Dashboards comparativos de rendimiento entre lotes y periodos.",
-    icon: BarChart3,
-    href: "#analitica"
-  },
-  {
-    title: "Reportes Ejecutivos",
-    description: "Generación masiva de reportes profesionales en PDF y Excel.",
-    icon: FileBarChart,
-    href: "#reportes"
-  },
-  {
-    title: "Multi-Granja",
-    description: "Gestiona múltiples ubicaciones y equipos desde una sola cuenta.",
-    icon: Globe,
-    href: "#multi-granja"
-  }
-]
+// Features are sourced from `FeaturesMegaMenu` → `featuresFlatList`
+// so the desktop mega-menu and the mobile nav stay in sync with the
+// real mobile-app modules.
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -141,20 +108,48 @@ export function Header() {
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
-            <MegaMenu title="Módulos" items={modulesMenuItems} align="left" isScrolled={isScrolled} />
-            <MegaMenu title="Funciones" items={featuresMenuItems} isScrolled={isScrolled} />
+            <MegaMenu
+              title="Módulos"
+              items={modulesMenuItems}
+              isScrolled={isScrolled}
+              accent="from-sky-500 to-indigo-600"
+              featured={{
+                eyebrow: "Recomendado",
+                title: "Todo tu negocio en una app",
+                description:
+                  "Lotes, gastos, ventas y facturación NCF listos para la DGII — integrados de fábrica.",
+                bullets: ["Débito de inventario", "Reportes PDF/Excel", "Multi-granja"],
+                ctaLabel: "Explorar módulos",
+                ctaHref: "/#modulos",
+              }}
+            />
+            <FeaturesMegaMenu title="Funciones" isScrolled={isScrolled} />
             <a
               href="#precios"
               className={cn(
                 "text-sm font-medium transition-colors",
-                isScrolled 
-                  ? "text-stripe-heading hover:text-brand-primary" 
+                isScrolled
+                  ? "text-stripe-heading hover:text-brand-primary"
                   : "text-white/90 hover:text-white"
               )}
             >
               Precios
             </a>
-            <MegaMenu title="Aprende" items={learnMenuItems} align="right" isScrolled={isScrolled} />
+            <MegaMenu
+              title="Aprende"
+              items={learnMenuItems}
+              isScrolled={isScrolled}
+              accent="from-emerald-500 to-teal-600"
+              featured={{
+                eyebrow: "Primeros pasos",
+                title: "Configura tu primer lote en 5 min",
+                description:
+                  "Guía interactiva paso a paso — desde crear la granja hasta registrar la primera venta.",
+                bullets: ["Videos en español", "Casos reales RD", "Soporte humano"],
+                ctaLabel: "Ir a la guía rápida",
+                ctaHref: "/#faq",
+              }}
+            />
             {navLinks.map((link) => (
               <a
                 key={link.name}
@@ -267,13 +262,21 @@ export function Header() {
 
             <div className="space-y-4">
               <p className="text-xs font-bold text-stripe-muted uppercase tracking-widest">Funciones</p>
-              <div className="grid grid-cols-1 gap-3">
-                {featuresMenuItems.map((item) => (
-                  <a key={item.title} href={item.href} className="flex items-center gap-3 text-stripe-heading hover:text-brand-primary" onClick={() => setMobileMenuOpen(false)}>
-                    <item.icon className="w-5 h-5 text-brand-primary" />
-                    <span className="font-medium">{item.title}</span>
-                  </a>
-                ))}
+              <div className="grid grid-cols-2 gap-2">
+                {featuresFlatList.map((item) => {
+                  const Icon = item.icon
+                  return (
+                    <Link
+                      key={item.title}
+                      to={item.href}
+                      className="flex items-center gap-2 p-2 rounded-lg border border-stripe-border text-stripe-heading hover:border-brand-primary hover:text-brand-primary transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Icon className="w-4 h-4 text-brand-primary shrink-0" />
+                      <span className="text-xs font-bold truncate">{item.title}</span>
+                    </Link>
+                  )
+                })}
               </div>
             </div>
 

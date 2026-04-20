@@ -92,37 +92,6 @@ export function Hero() {
               </button>
             </div>
 
-            {/* Trust Indicators */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 pt-2">
-              <div className="flex -space-x-3">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <img
-                    key={i}
-                    src={`https://i.pravatar.cc/100?img=${i + 10}`}
-                    alt="User"
-                    className="w-10 h-10 rounded-full border-2 border-brand-dark"
-                  />
-                ))}
-              </div>
-              <div className="text-sm">
-                <span className="font-bold text-white">+10,000</span>
-                <span className="text-white/60"> productores confían en nosotros</span>
-                <div className="flex items-center gap-1 mt-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <svg
-                      key={i}
-                      className="w-4 h-4 text-amber-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                  <span className="text-white/60 ml-1">4.9/5</span>
-                </div>
-              </div>
-            </div>
-
             {/* Quick Features */}
             <div className="flex flex-wrap gap-3">
               {[
@@ -142,64 +111,73 @@ export function Hero() {
           </div>
 
           {/* Right: Animated phone mockup */}
-          <div className="relative w-full flex justify-center lg:justify-end items-center pt-6 lg:pt-0">
-            {/* Glow behind the phone */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-[380px] h-[380px] rounded-full bg-cyan-400/20 blur-[120px]" />
-            </div>
+          <div className="relative w-full flex justify-center items-center pt-6 lg:pt-0">
+            {/* Inner wrapper anchored to the phone so floating badges and
+                dots stay glued to the device regardless of column width. */}
+            <div className="relative inline-block">
+              {/* Glow behind the phone */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-[380px] h-[380px] rounded-full bg-cyan-400/20 blur-[120px]" />
+              </div>
 
-            {/* Floating dots for ambience */}
-            <FloatingBadge
-              className="absolute top-4 -left-6 lg:left-0 z-20"
-              color="from-emerald-400 to-teal-500"
-              emoji="🥚"
-              title="+420 huevos"
-              subtitle="hoy"
-            />
-            <FloatingBadge
-              className="absolute bottom-16 -right-2 lg:right-8 z-20 delay-200"
-              color="from-amber-400 to-orange-500"
-              emoji="📈"
-              title="+12.4%"
-              subtitle="ingresos"
-            />
-            <FloatingBadge
-              className="absolute top-1/2 -right-4 lg:-right-4 z-20 delay-500"
-              color="from-cyan-400 to-blue-500"
-              emoji="⚡"
-              title="Sync live"
-              subtitle="3 granjas"
-            />
+              {/* Floating badges */}
+              <FloatingBadge
+                className="absolute top-6 -left-24 z-20"
+                color="from-emerald-400 to-teal-500"
+                emoji="🥚"
+                title="+420 huevos"
+                subtitle="hoy"
+              />
+              <FloatingBadge
+                className="absolute bottom-20 -right-20 z-20 delay-200"
+                color="from-amber-400 to-orange-500"
+                emoji="📈"
+                title="+12.4%"
+                subtitle="ingresos"
+              />
+              <FloatingBadge
+                className="absolute top-1/2 -right-28 z-20 delay-500"
+                color="from-cyan-400 to-blue-500"
+                emoji="⚡"
+                title="Sync live"
+                subtitle="3 granjas"
+              />
 
-            <div className="relative z-10">
-              <PhoneFrame label={HERO_SCREENS[index].label} tilt="left" floating>
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={HERO_SCREENS[index].key}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.4 }}
-                    className="w-full h-full"
-                  >
-                    <Active />
-                  </motion.div>
-                </AnimatePresence>
-              </PhoneFrame>
-            </div>
+              <div className="relative z-10">
+                <PhoneFrame
+                  label={HERO_SCREENS[index].label}
+                  labelVariant="light"
+                  tilt="left"
+                  floating
+                >
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={HERO_SCREENS[index].key}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.4 }}
+                      className="w-full h-full"
+                    >
+                      <Active />
+                    </motion.div>
+                  </AnimatePresence>
+                </PhoneFrame>
+              </div>
 
-            {/* Mini navigation dots */}
-            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
-              {HERO_SCREENS.map((s, i) => (
-                <button
-                  key={s.key}
-                  onClick={() => setIndex(i)}
-                  className={`h-1.5 rounded-full transition-all ${
-                    i === index ? "w-8 bg-cyan-400" : "w-1.5 bg-white/30 hover:bg-white/50"
-                  }`}
-                  aria-label={`Ver ${s.label}`}
-                />
-              ))}
+              {/* Mini navigation dots */}
+              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
+                {HERO_SCREENS.map((s, i) => (
+                  <button
+                    key={s.key}
+                    onClick={() => setIndex(i)}
+                    className={`h-1.5 rounded-full transition-all ${
+                      i === index ? "w-8 bg-cyan-400" : "w-1.5 bg-white/30 hover:bg-white/50"
+                    }`}
+                    aria-label={`Ver ${s.label}`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
