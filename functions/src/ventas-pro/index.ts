@@ -6,7 +6,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { withRateLimit, RATE_LIMIT_PRESETS } from '../middleware/rateLimit';
-import { validateInput, sanitizeObject, verifyFarmAccess } from '../middleware/security';
+import { verifyFarmAccess } from '../middleware/security';
 
 // Inicializar si no está inicializado
 if (!admin.apps.length) {
@@ -97,8 +97,8 @@ async function getFarmFiscalConfig(farmId: string): Promise<any> {
   
   const farmData = farmDoc.data()!;
   return farmData.regional?.fiscal || {
-    taxRate: 0.18,
-    taxName: 'ITBIS',
+    taxRate: 0,
+    taxName: '',
     taxIncluded: false,
   };
 }

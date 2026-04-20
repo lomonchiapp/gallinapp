@@ -105,22 +105,23 @@ export interface Farm {
   settings: {
     // Precios específicos de esta granja
     defaultEggPrice: number; // Precio por unidad de huevo (DOP)
+    /** Precio por gallina ponedora (ave); opcional en documentos antiguos */
+    defaultPonedoraPrice?: number;
     defaultChickenPricePerPound: number; // Precio por libra de pollo de engorde (DOP)
-    defaultLevantePricePerUnit: number; // Precio por unidad de pollo israelí (DOP)
+    defaultLevantePricePerUnit: number; // Precio por ave de levante (DOP)
     
     // Configuraciones de crecimiento y operativas
-    israeliGrowthDays: number; // Días promedio de crecimiento para israelíes
+    israeliGrowthDays: number; // Días promedio de crecimiento para levantes
     engordeGrowthDays: number; // Días promedio de crecimiento para engorde
     targetEngordeWeight: number; // Peso objetivo en libras para pollos de engorde
     acceptableMortalityRate: number; // Porcentaje de mortalidad aceptable
     eggsPerBox: number; // Cantidad estándar de huevos por caja para ventas
     
-    // Configuración de facturación específica de la granja
+    // Configuración de facturación específica de la granja (sin impuestos)
     invoiceSettings: {
       prefix: string;
       nextNumber: number;
       format: string;
-      taxRate?: number;
       currency: string;
     };
     
@@ -153,6 +154,7 @@ export interface Farm {
 export const DEFAULT_FARM_SETTINGS = {
   // Precios por defecto
   defaultEggPrice: 8.0, // DOP por unidad
+  defaultPonedoraPrice: 200.0, // DOP por gallina ponedora (ave)
   defaultChickenPricePerPound: 65.0, // DOP por libra
   defaultLevantePricePerUnit: 150.0, // DOP por ave
   

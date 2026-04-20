@@ -191,12 +191,11 @@ export interface FarmSettings {
     eggsPerBox: number;
   };
   
-  // Facturación
+  // Facturación (sin impuestos)
   invoicing: {
     prefix: string;
     nextNumber: number;
     format: string;
-    taxRate: number;
     currency: string;
     includeQR: boolean;
     includeTerms: boolean;
@@ -231,9 +230,10 @@ export interface FarmSettings {
 }
 
 /**
- * Valores por defecto para nuevas granjas
+ * Valores por defecto para nuevas granjas (forma anidada `FarmSettings`).
+ * No confundir con `DEFAULT_FARM_SETTINGS` en `farm.ts` (forma plana del documento `Farm`).
  */
-export const DEFAULT_FARM_SETTINGS: FarmSettings = {
+export const FARM_SETTINGS_DEFAULTS: FarmSettings = {
   pricing: {
     defaultEggPrice: 8.0,
     defaultChickenPricePerPound: 65.0,
@@ -252,7 +252,6 @@ export const DEFAULT_FARM_SETTINGS: FarmSettings = {
     prefix: 'FAC',
     nextNumber: 1,
     format: 'FAC-{number}',
-    taxRate: 0.18,
     currency: 'DOP',
     includeQR: false,
     includeTerms: true,

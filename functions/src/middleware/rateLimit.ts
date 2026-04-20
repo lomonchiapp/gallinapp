@@ -198,7 +198,7 @@ export function rateLimitHttp(
     next: () => void
   ) => {
     const functionName = request.path.split('/').pop() || 'unknown';
-    const key = generateKey(request, undefined, resolvedConfig.keyGenerator);
+    const key = generateKey(request, undefined, 'keyGenerator' in resolvedConfig ? resolvedConfig.keyGenerator : undefined);
     
     const result = await checkRateLimit(key, functionName, resolvedConfig);
     

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 interface MegaMenuProps {
   title: string
   align?: "left" | "center" | "right"
+  isScrolled?: boolean
   items: {
     title: string
     description: string
@@ -14,7 +15,7 @@ interface MegaMenuProps {
   }[]
 }
 
-export function MegaMenu({ title, align = "center", items }: MegaMenuProps) {
+export function MegaMenu({ title, align = "center", isScrolled = true, items }: MegaMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -110,16 +111,21 @@ export function MegaMenu({ title, align = "center", items }: MegaMenuProps) {
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "text-sm font-semibold transition-all relative group flex items-center gap-1 py-2 px-1 cursor-pointer",
-          isOpen ? "text-brand-primary" : "text-slate-600 hover:text-slate-900"
+          isScrolled 
+            ? (isOpen ? "text-brand-primary" : "text-slate-600 hover:text-slate-900")
+            : (isOpen ? "text-primary-300" : "text-white/90 hover:text-white")
         )}
       >
         {title}
         <ChevronDown className={cn(
           "h-4 w-4 transition-transform duration-300",
-          isOpen ? "rotate-180 text-brand-primary" : "text-slate-400 group-hover:text-slate-600"
+          isScrolled
+            ? (isOpen ? "rotate-180 text-brand-primary" : "text-slate-400 group-hover:text-slate-600")
+            : (isOpen ? "rotate-180 text-primary-300" : "text-white/60 group-hover:text-white")
         )} />
         <span className={cn(
-          "absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 bg-brand-primary transition-all duration-300",
+          "absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 transition-all duration-300",
+          isScrolled ? "bg-brand-primary" : "bg-white",
           isOpen ? "w-full" : "w-0 group-hover:w-1/2"
         )}></span>
       </button>

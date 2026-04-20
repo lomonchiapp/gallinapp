@@ -3,6 +3,21 @@ import { db, auth } from '@/lib/firebase';
 import { TipoAve } from '@gallinapp/types';
 import type { Gasto } from '@gallinapp/types';
 
+function esLineaCostoInicialSintetica(g: Gasto): boolean {
+  if (g.articuloId === 'costo-inicial') return true;
+  const d = (g.descripcion || '').toLowerCase();
+  const n = (g.articuloNombre || '').toLowerCase();
+  return d.includes('costo inicial') || n.includes('costo inicial');
+}
+
+function calcularInversionYLoteGastos(gastos: Gasto[], costoEnDocumentoLote: number): number {
+  const sumaMovimientos = gastos.reduce((s, g) => s + g.total, 0);
+  if (gastos.some(esLineaCostoInicialSintetica)) {
+    return sumaMovimientos;
+  }
+  return (costoEnDocumentoLote || 0) + sumaMovimientos;
+}
+
 export const obtenerGastos = async (loteId?: string, tipoLote?: TipoAve): Promise<Gasto[]> => {
   try {
     const userId = auth.currentUser?.uid;
@@ -26,10 +41,15 @@ export const obtenerGastos = async (loteId?: string, tipoLote?: TipoAve): Promis
   }
 };
 
-export const calcularCostoProduccionUnitario = async (loteId: string, tipoLote: TipoAve): Promise<number> => {
+/** Inversión total: misma lógica que apps/mobile (sin duplicar `lote.costo` + línea costo-inicial en GASTOS). */
+export const calcularCostoProduccionUnitario = async (
+  loteId: string,
+  tipoLote: TipoAve,
+  costoEnDocumentoLote = 0
+): Promise<number> => {
   try {
     const gastosLote = await obtenerGastos(loteId, tipoLote);
-    return gastosLote.reduce((total, gasto) => total + gasto.total, 0);
+    return calcularInversionYLoteGastos(gastosLote, costoEnDocumentoLote);
   } catch (error) {
     console.error('Error al calcular costo de producción unitario:', error);
     return 0;

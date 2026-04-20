@@ -8,6 +8,10 @@ import MiGranja from './pages/mi-granja/MiGranja';
 import Gastos from './pages/gastos/Gastos';
 import Ventas from './pages/ventas/Ventas';
 import Facturacion from './pages/facturacion/Facturacion';
+import Invite from './pages/invite/Invite';
+import Terminos from './pages/legal/Terminos';
+import Privacidad from './pages/legal/Privacidad';
+import Cancelaciones from './pages/legal/Cancelaciones';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -26,13 +30,19 @@ function App() {
         <div className="min-h-screen w-full selection:bg-brand-primary/20 selection:text-brand-primary">
           <Routes>
             <Route path="/" element={<Landing />} />
+            <Route path="/invite" element={<Invite />} />
             <Route path="/auth/login" element={<Login />} />
             <Route path="/auth/signup" element={<Signup />} />
             <Route path="/mi-granja" element={<MiGranja />} />
             <Route path="/gastos" element={<Gastos />} />
             <Route path="/ventas" element={<Ventas />} />
             <Route path="/facturacion" element={<Facturacion />} />
-            
+
+            {/* Legal Pages */}
+            <Route path="/terminos" element={<Terminos />} />
+            <Route path="/privacidad" element={<Privacidad />} />
+            <Route path="/cancelaciones" element={<Cancelaciones />} />
+
             {/* Protected Routes */}
             <Route 
               path="/checkout/trial" 

@@ -115,5 +115,69 @@ export const onFarmCreated = onDocumentCreated('farms/{farmId}', async (event) =
   }
 });
 
+/**
+ * Trigger cuando se actualiza una solicitud de acceso a una granja.
+ * Si el estado pasa a APPROVED o REJECTED, crea una notificación para el solicitante.
+ */
+export const onAccessRequestUpdated = onDocumentUpdated(
+  'accessRequests/{requestId}',
+  async (event) => {
+    const beforeData = event.data?.before.data();
+    const afterData = event.data?.after.data();
+    if (!beforeData || !afterData) return;
 
+    const previousStatus = beforeData.status;
+    const newStatus = afterData.status;
+    if (previousStatus === newStatus) return;
+
+    const requestId = event.params.requestId;
+    const requesterId = afterData.requesterId;
+    const farmId = afterData.farmId;
+    if (newStatus !== 'APPROVED' && newStatus !== 'REJECTED') return;
+
+    let farmName = '';
+    if (farmId) {
+      try {
+        const farmDoc = await db.collection('farms').doc(farmId).get();
+        if (farmDoc.exists) {
+          farmName = farmDoc.data()?.name || '';
+        }
+      } catch (e) {
+        console.warn('Could not resolve farm name:', e);
+      }
+    }
+
+    try {
+      const notification: Record<string, unknown> = {
+        userId: requesterId,
+        type: newStatus === 'APPROVED' ? 'ACCESS_REQUEST_APPROVED' : 'ACCESS_REQUEST_REJECTED',
+        category: 'EVENT',
+        priority: 'MEDIUM',
+        title:
+          newStatus === 'APPROVED'
+            ? 'Solicitud de acceso aprobada'
+            : 'Solicitud de acceso rechazada',
+        message:
+          newStatus === 'APPROVED'
+            ? `Tu solicitud para unirte a "${farmName || 'la granja'}" ha sido aprobada. Ya puedes acceder desde la app.`
+            : `Tu solicitud para unirte a "${farmName || 'la granja'}" ha sido rechazada.`,
+        data: {
+          farmId,
+          farmName,
+          requestId,
+        },
+        status: 'UNREAD',
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      };
+
+      await db.collection('notifications').add(notification);
+      console.log(
+        `Access request ${newStatus.toLowerCase()} notification sent to ${requesterId} for request ${requestId}`
+      );
+    } catch (error) {
+      console.error('Error creating access request notification:', error);
+    }
+  }
+);
 

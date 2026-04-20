@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "d298378b-ccaf-46a4-8c4b-480efc4e09d3"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.ixiapps.gallinapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.ixiapps.gallinapp"
+    }
+  }
+}

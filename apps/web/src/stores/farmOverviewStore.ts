@@ -38,8 +38,7 @@ export const useFarmOverviewStore = create<FarmOverviewState>((set) => ({
       const calcularInversion = async (lotes: any[], tipo: TipoAve) => {
         const inversiones = await Promise.all(
           lotes.map(async (lote) => {
-            const gastosTotal = await calcularCostoProduccionUnitario(lote.id, tipo);
-            return (lote.costo || 0) + gastosTotal;
+            return calcularCostoProduccionUnitario(lote.id, tipo, lote.costo || 0);
           })
         );
         return inversiones.reduce((sum, current) => sum + current, 0);
@@ -64,6 +63,8 @@ export const useFarmOverviewStore = create<FarmOverviewState>((set) => ({
     }
   },
 }));
+
+
 
 
 

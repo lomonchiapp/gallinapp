@@ -29,13 +29,12 @@ export {
   getResumenVentas,
 } from './ventas-pro';
 
-// Funciones fiscales
+// Funciones fiscales (la aplicación no maneja impuestos; getTaxRates eliminado)
 export {
   validarIdFiscal,
   getNCFConfig,
   generarNCF,
   transmitirDocumentoFiscal,
-  getTaxRates,
 } from './ventas-pro/fiscal';
 
 // ============================================================================
@@ -150,6 +149,4 @@ export const scheduledNCFExpirationCheck = functions.pubsub
       }
     }
   });
-
-
 

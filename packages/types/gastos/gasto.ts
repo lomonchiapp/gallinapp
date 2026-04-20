@@ -12,6 +12,9 @@ export interface Gasto {
     fecha: Date;
     categoria: CategoriaGasto;
     descripcion?: string;
+    afectaInventario?: boolean;
+    movimientoInventarioId?: string;
+    almacenId?: string;
     createdBy: string;
     createdAt: Date;
 }

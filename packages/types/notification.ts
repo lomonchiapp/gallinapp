@@ -29,6 +29,10 @@ export const enum NotificationType {
   LOTE_FINALIZADO = 'LOTE_FINALIZADO',
   VENTA_REGISTRADA = 'VENTA_REGISTRADA',
   USUARIO_CREADO = 'USUARIO_CREADO',
+
+  // Solicitudes de acceso a granja
+  ACCESS_REQUEST_APPROVED = 'ACCESS_REQUEST_APPROVED',
+  ACCESS_REQUEST_REJECTED = 'ACCESS_REQUEST_REJECTED',
   
   // Alertas personalizadas
   CUSTOM = 'CUSTOM',
@@ -72,6 +76,10 @@ export interface NotificationData {
   percentage?: number;
   userId?: string;
   userName?: string;
+  /** Para ACCESS_REQUEST_APPROVED / ACCESS_REQUEST_REJECTED */
+  farmId?: string;
+  farmName?: string;
+  requestId?: string;
   customData?: Record<string, any>;
 }
 

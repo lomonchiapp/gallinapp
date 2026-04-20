@@ -117,40 +117,54 @@ export function Header() {
     { name: "Características", href: "#caracteristicas" },
   ]
 
-  const PricingLink = () => (
-    <a
-      href="#precios"
-      className="text-sm font-medium text-stripe-heading hover:text-brand-primary transition-colors"
-    >
-      Precios
-    </a>
-  )
-
   return (
     <header
       className={cn(
         "fixed top-0 z-50 w-full transition-all duration-300 px-6 py-4",
         isScrolled 
-          ? "bg-white/90 backdrop-blur-md border-b border-stripe-border py-3 shadow-md" 
+          ? "bg-white/95 backdrop-blur-md border-b border-stripe-border py-3 shadow-md" 
           : "bg-transparent"
       )}
     >
-      <div className="w-full max-w-7xl mx-auto flex items-center justify-between">
+      <div className="relative z-10 w-full max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-8">
+          {/* Logo */}
           <Link to="/">
-            <Logo variant="line" height={32} />
+            <Logo 
+              variant={isScrolled ? "line" : "white-horizontal"} 
+              height={isScrolled ? 36 : 48} 
+              className={cn(
+                "transition-all duration-300",
+                !isScrolled && "drop-shadow-2xl"
+              )}
+            />
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
-            <MegaMenu title="Módulos" items={modulesMenuItems} align="left" />
-            <MegaMenu title="Funciones" items={featuresMenuItems} />
-            <PricingLink />
-            <MegaMenu title="Aprende" items={learnMenuItems} align="right" />
+            <MegaMenu title="Módulos" items={modulesMenuItems} align="left" isScrolled={isScrolled} />
+            <MegaMenu title="Funciones" items={featuresMenuItems} isScrolled={isScrolled} />
+            <a
+              href="#precios"
+              className={cn(
+                "text-sm font-medium transition-colors",
+                isScrolled 
+                  ? "text-stripe-heading hover:text-brand-primary" 
+                  : "text-white/90 hover:text-white"
+              )}
+            >
+              Precios
+            </a>
+            <MegaMenu title="Aprende" items={learnMenuItems} align="right" isScrolled={isScrolled} />
             {navLinks.map((link) => (
               <a
                 key={link.name}
                 href={link.href}
-                className="text-sm font-medium text-stripe-heading hover:text-brand-primary transition-colors"
+                className={cn(
+                  "text-sm font-medium transition-colors",
+                  isScrolled 
+                    ? "text-stripe-heading hover:text-brand-primary" 
+                    : "text-white/90 hover:text-white"
+                )}
               >
                 {link.name}
               </a>
@@ -159,20 +173,25 @@ export function Header() {
         </div>
 
         <div className="hidden md:flex items-center gap-4">
-          <LanguageSelector />
-          <div className="h-6 w-px bg-stripe-border mx-2" />
+          <LanguageSelector isScrolled={isScrolled} />
+          <div className={cn("h-6 w-px mx-2", isScrolled ? "bg-stripe-border" : "bg-white/20")} />
           
           {user ? (
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-primary/5 border border-brand-primary/10">
-                <UserIcon className="w-4 h-4 text-brand-primary" />
-                <span className="text-sm font-bold text-brand-dark max-w-[120px] truncate">
+              <div className={cn(
+                "flex items-center gap-2 px-3 py-1.5 rounded-full",
+                isScrolled 
+                  ? "bg-brand-primary/5 border border-brand-primary/10" 
+                  : "bg-white/10 border border-white/20"
+              )}>
+                <UserIcon className={cn("w-4 h-4", isScrolled ? "text-brand-primary" : "text-white")} />
+                <span className={cn("text-sm font-bold max-w-[120px] truncate", isScrolled ? "text-brand-dark" : "text-white")}>
                   {user.displayName || user.email}
                 </span>
               </div>
               <button 
                 onClick={() => signOut()}
-                className="p-2 text-stripe-muted hover:text-red-500 transition-colors"
+                className={cn("p-2 transition-colors", isScrolled ? "text-stripe-muted hover:text-red-500" : "text-white/70 hover:text-red-400")}
                 title="Cerrar Sesión"
               >
                 <LogOut className="w-5 h-5" />
@@ -182,13 +201,21 @@ export function Header() {
             <>
               <button 
                 onClick={() => navigate('/auth/login')}
-                className="text-sm font-semibold text-stripe-heading hover:opacity-70 transition-opacity"
+                className={cn(
+                  "text-sm font-semibold transition-opacity hover:opacity-70",
+                  isScrolled ? "text-stripe-heading" : "text-white"
+                )}
               >
                 Iniciar Sesión
               </button>
               <Button 
                 onClick={() => navigate('/auth/signup')}
-                className="bg-brand-primary hover:bg-brand-primary/90 text-white rounded-full px-6 shadow-md transition-all hover:shadow-lg"
+                className={cn(
+                  "rounded-full px-6 shadow-md transition-all hover:shadow-lg",
+                  isScrolled 
+                    ? "bg-brand-primary hover:bg-brand-primary/90 text-white" 
+                    : "bg-white hover:bg-white/90 text-brand-dark"
+                )}
               >
                 Prueba 15 días gratis
               </Button>
@@ -198,7 +225,7 @@ export function Header() {
 
         {/* Mobile Menu Toggle */}
         <button 
-          className="md:hidden p-2 text-stripe-heading"
+          className={cn("md:hidden p-2", isScrolled ? "text-stripe-heading" : "text-white")}
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           {mobileMenuOpen ? <X /> : <Menu />}

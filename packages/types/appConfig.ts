@@ -26,7 +26,7 @@ export interface AppConfig {
     [SubscriptionPlan.FREE]: SystemLimits;
     [SubscriptionPlan.BASIC]: SystemLimits;
     [SubscriptionPlan.PRO]: SystemLimits;
-    [SubscriptionPlan.ENTERPRISE]: SystemLimits;
+    [SubscriptionPlan.HACIENDA]: SystemLimits;
   };
   
   // ============================================================================
@@ -208,7 +208,7 @@ export const DEFAULT_SYSTEM_CONFIG: Omit<AppConfig, 'id' | 'updatedAt' | 'update
       prioritySupport: true,
       customBrandingEnabled: true,
     },
-    [SubscriptionPlan.ENTERPRISE]: {
+    [SubscriptionPlan.HACIENDA]: {
       maxFarms: 999,  // Ilimitado en práctica
       maxCollaboratorsPerFarm: 999,
       maxLotsPerFarm: 999,

@@ -4,7 +4,6 @@
  */
 
 import * as admin from 'firebase-admin';
-import * as functions from 'firebase-functions';
 
 // Inicializar si no está inicializado
 if (!admin.apps.length) {

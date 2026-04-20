@@ -7,7 +7,7 @@ export * from './enums';
 export * from './appConfig';
 // Engorde
 export * from './engorde/loteEngorde';
-// Israelies
+// Levantes
 export * from './levantes/EdadRegistro';
 export * from './levantes/loteLevante';
 // Ponedoras
@@ -40,3 +40,5 @@ export * from './metricas-referencia';
 export * from './admin';
 // Configuraciones (Settings)
 export * from './settings';
+// Galpones
+export * from './galpon';

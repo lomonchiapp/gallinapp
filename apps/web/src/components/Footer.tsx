@@ -1,4 +1,5 @@
 import { Instagram } from "lucide-react"
+import { Link } from "react-router-dom"
 import logoWhite from "@gallinapp/assets/logo-white.png"
 
 export function Footer() {
@@ -35,25 +36,26 @@ export function Footer() {
             <div className="space-y-4">
               <h5 className="font-bold text-white">Producto</h5>
               <ul className="space-y-2 text-sm font-medium">
-                <li><a href="#" className="text-white/60 hover:text-brand-primary transition-colors">Características</a></li>
-                <li><a href="#" className="text-white/60 hover:text-brand-primary transition-colors">Precios</a></li>
-                <li><a href="#" className="text-white/60 hover:text-brand-primary transition-colors">App Móvil</a></li>
+                <li><a href="/#modulos" className="text-white/60 hover:text-brand-primary transition-colors">Módulos</a></li>
+                <li><a href="/#caracteristicas" className="text-white/60 hover:text-brand-primary transition-colors">Características</a></li>
+                <li><a href="/#precios" className="text-white/60 hover:text-brand-primary transition-colors">Precios</a></li>
+                <li><a href="/#como-funciona" className="text-white/60 hover:text-brand-primary transition-colors">Cómo funciona</a></li>
               </ul>
             </div>
             <div className="space-y-4">
               <h5 className="font-bold text-white">Compañía</h5>
               <ul className="space-y-2 text-sm font-medium">
-                <li><a href="#" className="text-white/60 hover:text-brand-primary transition-colors">Sobre Nosotros</a></li>
-                <li><a href="#" className="text-white/60 hover:text-brand-primary transition-colors">Blog</a></li>
-                <li><a href="#" className="text-white/60 hover:text-brand-primary transition-colors">Carreras</a></li>
+                <li><a href="mailto:hola@gallinapp.com" className="text-white/60 hover:text-brand-primary transition-colors">Contacto</a></li>
+                <li><a href="mailto:soporte@gallinapp.com" className="text-white/60 hover:text-brand-primary transition-colors">Soporte</a></li>
+                <li><a href="https://www.instagram.com/gallin.app/" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-brand-primary transition-colors">Instagram</a></li>
               </ul>
             </div>
             <div className="space-y-4">
               <h5 className="font-bold text-white">Legal</h5>
               <ul className="space-y-2 text-sm font-medium">
-                <li><a href="#" className="text-white/60 hover:text-brand-primary transition-colors">Privacidad</a></li>
-                <li><a href="#" className="text-white/60 hover:text-brand-primary transition-colors">Términos</a></li>
-                <li><a href="#" className="text-white/60 hover:text-brand-primary transition-colors">Cookies</a></li>
+                <li><Link to="/terminos" className="text-white/60 hover:text-brand-primary transition-colors">Términos de uso</Link></li>
+                <li><Link to="/privacidad" className="text-white/60 hover:text-brand-primary transition-colors">Política de privacidad</Link></li>
+                <li><Link to="/cancelaciones" className="text-white/60 hover:text-brand-primary transition-colors">Cancelaciones y reembolsos</Link></li>
               </ul>
             </div>
           </div>
@@ -87,9 +89,9 @@ export function Footer() {
             </div>
 
             <div className="flex gap-6 text-xs font-bold text-white/40 uppercase tracking-widest">
-              <a href="#" className="hover:text-brand-primary transition-colors">Soporte</a>
-              <a href="#" className="hover:text-brand-primary transition-colors">Estado del Sistema</a>
-              <a href="#" className="hover:text-brand-primary transition-colors">Seguridad</a>
+              <a href="mailto:soporte@gallinapp.com" className="hover:text-brand-primary transition-colors">Soporte</a>
+              <Link to="/privacidad" className="hover:text-brand-primary transition-colors">Privacidad</Link>
+              <Link to="/terminos" className="hover:text-brand-primary transition-colors">Términos</Link>
             </div>
           </div>
 

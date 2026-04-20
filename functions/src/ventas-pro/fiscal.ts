@@ -21,13 +21,6 @@ const db = admin.firestore();
 
 type CountryCode = 'DO' | 'MX' | 'CO' | 'AR' | 'BR' | 'US';
 
-interface NCFConfig {
-  tipo: string; // B01, B02, B14, B15, etc.
-  serie: string;
-  secuenciaActual: number;
-  fechaVencimiento: Date;
-}
-
 interface FiscalValidationResult {
   valid: boolean;
   errors: string[];

@@ -15,17 +15,29 @@ import {
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 
+import type { 
+  SubscriptionPlan, 
+  SubscriptionStatus, 
+  SubscriptionPeriod,
+  SubscriptionStats 
+} from '@/types/subscription'
+import { PLAN_MRR } from '@/types/subscription'
+
 // ============================================================================
 // TIPOS LOCALES PARA EL ADMIN
 // ============================================================================
 
 export interface UserSubscription {
-  plan: 'FREE' | 'PRO' | 'ENTERPRISE'
-  status: 'active' | 'canceled' | 'past_due' | 'trialing'
+  plan: SubscriptionPlan
+  status: SubscriptionStatus
+  period?: SubscriptionPeriod
   startDate?: Date
   endDate?: Date
+  trialEndsAt?: Date
+  cancelAtPeriodEnd?: boolean
   stripeCustomerId?: string
   stripeSubscriptionId?: string
+  revenueCatId?: string
 }
 
 export interface AdminUser {
@@ -234,31 +246,161 @@ export async function getRecentActivity(): Promise<RecentActivity[]> {
 // SUSCRIPCIONES (basadas en usuarios)
 // ============================================================================
 
-export interface SubscriptionStats {
-  free: number
-  pro: number
-  enterprise: number
-  total: number
-}
+export { type SubscriptionStats } from '@/types/subscription'
 
 export async function getSubscriptionStats(): Promise<SubscriptionStats> {
   const users = await getUsers(1000)
   
   const stats: SubscriptionStats = {
     free: 0,
+    basic: 0,
     pro: 0,
-    enterprise: 0,
+    hacienda: 0,
     total: users.length,
+    active: 0,
+    trialing: 0,
+    cancelled: 0,
+    pastDue: 0,
   }
 
   users.forEach(user => {
     const plan = user.subscription?.plan?.toUpperCase() || 'FREE'
-    if (plan === 'PRO') stats.pro++
-    else if (plan === 'ENTERPRISE') stats.enterprise++
+    const status = user.subscription?.status || 'active'
+    
+    // Count by plan
+    if (plan === 'BASIC') stats.basic++
+    else if (plan === 'PRO') stats.pro++
+    else if (plan === 'HACIENDA') stats.hacienda++
     else stats.free++
+    
+    // Count by status
+    if (status === 'active') stats.active++
+    else if (status === 'trialing') stats.trialing++
+    else if (status === 'cancelled') stats.cancelled++
+    else if (status === 'past_due') stats.pastDue++
   })
 
   return stats
+}
+
+// ============================================================================
+// BUSINESS METRICS
+// ============================================================================
+
+export interface BusinessMetrics {
+  mrr: number // Monthly Recurring Revenue
+  arr: number // Annual Recurring Revenue
+  churnRate: number // % of users who cancelled this month
+  activeUsers: number
+  trialingUsers: number
+  conversionRate: number // Trial to paid conversion
+  averageRevenuePerUser: number
+  revenueByPlan: Record<SubscriptionPlan, number>
+  growthRate: number // MRR growth % from last month
+}
+
+export async function getBusinessMetrics(): Promise<BusinessMetrics> {
+  const users = await getUsers(1000)
+  
+  let mrr = 0
+  let activeUsers = 0
+  let trialingUsers = 0
+  let convertedFromTrial = 0
+  let totalTrials = 0
+  const revenueByPlan: Record<SubscriptionPlan, number> = {
+    FREE: 0,
+    BASIC: 0,
+    PRO: 0,
+    HACIENDA: 0,
+  }
+
+  users.forEach(user => {
+    const plan = (user.subscription?.plan?.toUpperCase() || 'FREE') as SubscriptionPlan
+    const status = user.subscription?.status || 'inactive'
+    
+    if (status === 'active' && plan !== 'FREE') {
+      const planMrr = PLAN_MRR[plan] || 0
+      mrr += planMrr
+      revenueByPlan[plan] += planMrr
+      activeUsers++
+    }
+    
+    if (status === 'trialing') {
+      trialingUsers++
+      totalTrials++
+    }
+    
+    // Simple conversion tracking - users who were trialing and now active
+    if (status === 'active' && user.subscription?.trialEndsAt) {
+      convertedFromTrial++
+      totalTrials++
+    }
+  })
+
+  const arr = mrr * 12
+  const churnRate = users.length > 0 
+    ? (users.filter(u => u.subscription?.status === 'cancelled').length / users.length) * 100 
+    : 0
+  const conversionRate = totalTrials > 0 ? (convertedFromTrial / totalTrials) * 100 : 0
+  const averageRevenuePerUser = activeUsers > 0 ? mrr / activeUsers : 0
+
+  return {
+    mrr,
+    arr,
+    churnRate,
+    activeUsers,
+    trialingUsers,
+    conversionRate,
+    averageRevenuePerUser,
+    revenueByPlan,
+    growthRate: 0, // Would need historical data to calculate
+  }
+}
+
+// ============================================================================
+// BLOCKED FARMS (Farms with expired subscriptions)
+// ============================================================================
+
+export interface BlockedFarm extends AdminFarm {
+  ownerName?: string
+  ownerEmail: string
+  blockedSince?: Date
+  lastPaymentDate?: Date
+  outstandingAmount?: number
+}
+
+export async function getBlockedFarms(): Promise<BlockedFarm[]> {
+  const farms = await getFarms(1000)
+  const users = await getUsers(1000)
+  
+  // Create user map for quick lookup
+  const userMap = new Map(users.map(u => [u.uid, u]))
+  
+  // Filter farms where owner has FREE plan or inactive subscription
+  const blockedFarms: BlockedFarm[] = []
+  
+  for (const farm of farms) {
+    const owner = userMap.get(farm.ownerId)
+    if (!owner) continue
+    
+    const plan = owner.subscription?.plan?.toUpperCase() || 'FREE'
+    const status = owner.subscription?.status || 'inactive'
+    
+    // Farm is blocked if owner has FREE plan OR subscription is not active
+    if (plan === 'FREE' || (status !== 'active' && status !== 'trialing')) {
+      blockedFarms.push({
+        ...farm,
+        ownerName: owner.displayName,
+        ownerEmail: owner.email,
+        blockedSince: status === 'cancelled' ? owner.subscription?.endDate : undefined,
+        lastPaymentDate: owner.subscription?.startDate,
+      })
+    }
+  }
+  
+  return blockedFarms.sort((a, b) => 
+    (b.blockedSince?.getTime() || 0) - (a.blockedSince?.getTime() || 0)
+  )
 }
 
 export interface UserWithSubscription extends AdminUser {
@@ -276,6 +418,8 @@ export async function getUsersWithSubscriptions(): Promise<UserWithSubscription[
 
 // ============================================================================
 // LOTES
+// Nombres de colección deben coincidir con FARM_COLLECTIONS en apps/mobile (firestore-paths.service.ts):
+// lotesPonedoras, lotesEngorde, lotesLevantes (ruta: farms/{farmId}/{collection})
 // ============================================================================
 
 export type TipoLote = 'ponedoras' | 'engorde' | 'levantes'
@@ -308,11 +452,11 @@ export async function getAllLotes(): Promise<AdminLote[]> {
   const farms = await getFarms(1000)
   const farmMap = new Map(farms.map(f => [f.id, f.displayName || f.name]))
   
-  // Cargar lotes de cada tipo usando collectionGroup
+  // Cargar lotes de cada tipo usando collectionGroup (nombres alineados con mobile: lotesPonedoras, lotesEngorde, lotesLevantes)
   const tiposLote: { collection: string; tipo: TipoLote }[] = [
-    { collection: 'ponedoras', tipo: 'ponedoras' },
-    { collection: 'engorde', tipo: 'engorde' },
-    { collection: 'levantes', tipo: 'levantes' },
+    { collection: 'lotesPonedoras', tipo: 'ponedoras' },
+    { collection: 'lotesEngorde', tipo: 'engorde' },
+    { collection: 'lotesLevantes', tipo: 'levantes' },
   ]
   
   for (const { collection: colName, tipo } of tiposLote) {
@@ -322,7 +466,7 @@ export async function getAllLotes(): Promise<AdminLote[]> {
       
       snapshot.docs.forEach(docSnap => {
         const data = docSnap.data()
-        // El path es farms/{farmId}/ponedoras/{loteId}
+        // El path es farms/{farmId}/lotesPonedoras|lotesEngorde|lotesLevantes/{loteId}
         const pathParts = docSnap.ref.path.split('/')
         const farmId = pathParts[1] || ''
         
@@ -359,17 +503,17 @@ export async function getLotesCount(): Promise<{ ponedoras: number; engorde: num
   let ponedoras = 0, engorde = 0, levantes = 0
   
   try {
-    const ponedorasSnap = await getDocs(collectionGroup(db, 'ponedoras'))
+    const ponedorasSnap = await getDocs(collectionGroup(db, 'lotesPonedoras'))
     ponedoras = ponedorasSnap.size
   } catch { /* ignore */ }
   
   try {
-    const engordeSnap = await getDocs(collectionGroup(db, 'engorde'))
+    const engordeSnap = await getDocs(collectionGroup(db, 'lotesEngorde'))
     engorde = engordeSnap.size
   } catch { /* ignore */ }
   
   try {
-    const levantesSnap = await getDocs(collectionGroup(db, 'levantes'))
+    const levantesSnap = await getDocs(collectionGroup(db, 'lotesLevantes'))
     levantes = levantesSnap.size
   } catch { /* ignore */ }
   
@@ -455,9 +599,9 @@ export async function getFarmLotes(farmId: string): Promise<AdminLote[]> {
   const lotes: AdminLote[] = []
   
   const tiposLote: { collection: string; tipo: TipoLote }[] = [
-    { collection: 'ponedoras', tipo: 'ponedoras' },
-    { collection: 'engorde', tipo: 'engorde' },
-    { collection: 'levantes', tipo: 'levantes' },
+    { collection: 'lotesPonedoras', tipo: 'ponedoras' },
+    { collection: 'lotesEngorde', tipo: 'engorde' },
+    { collection: 'lotesLevantes', tipo: 'levantes' },
   ]
   
   for (const { collection: colName, tipo } of tiposLote) {
@@ -574,5 +718,561 @@ export function subscribeToNotifications(
       }
     })
     callback(notifications)
+  })
+}
+
+// ============================================================================
+// GALPONES
+// ============================================================================
+
+export interface AdminGalpon {
+  id: string
+  nombre: string
+  tipo: string
+  capacidad: number
+  ocupacion?: number
+  estado: 'activo' | 'inactivo' | 'mantenimiento'
+  createdAt: Date
+  updatedAt: Date
+}
+
+export async function getFarmGalpones(farmId: string): Promise<AdminGalpon[]> {
+  try {
+    const galponesRef = collection(db, 'farms', farmId, 'galpones')
+    const snapshot = await getDocs(galponesRef)
+    
+    return snapshot.docs.map(docSnap => {
+      const data = docSnap.data()
+      return {
+        id: docSnap.id,
+        nombre: data.nombre || 'Sin nombre',
+        tipo: data.tipo || 'general',
+        capacidad: data.capacidad || 0,
+        ocupacion: data.ocupacion,
+        estado: data.estado || 'activo',
+        createdAt: data.createdAt?.toDate() || new Date(),
+        updatedAt: data.updatedAt?.toDate() || new Date(),
+      }
+    })
+  } catch (error) {
+    console.error('Error loading galpones:', error)
+    return []
+  }
+}
+
+// ============================================================================
+// INVENTARIO / ARTÍCULOS
+// ============================================================================
+
+export interface AdminInventoryItem {
+  id: string
+  nombre: string
+  categoria: string
+  cantidad: number
+  unidad: string
+  precioUnitario?: number
+  stockMinimo?: number
+  ubicacion?: string
+  fechaVencimiento?: Date
+  createdAt: Date
+  updatedAt: Date
+}
+
+export async function getFarmInventory(farmId: string): Promise<AdminInventoryItem[]> {
+  try {
+    const inventoryRef = collection(db, 'farms', farmId, 'inventario')
+    const snapshot = await getDocs(inventoryRef)
+    
+    return snapshot.docs.map(docSnap => {
+      const data = docSnap.data()
+      return {
+        id: docSnap.id,
+        nombre: data.nombre || 'Sin nombre',
+        categoria: data.categoria || 'general',
+        cantidad: data.cantidad || 0,
+        unidad: data.unidad || 'unidad',
+        precioUnitario: data.precioUnitario,
+        stockMinimo: data.stockMinimo,
+        ubicacion: data.ubicacion,
+        fechaVencimiento: data.fechaVencimiento?.toDate(),
+        createdAt: data.createdAt?.toDate() || new Date(),
+        updatedAt: data.updatedAt?.toDate() || new Date(),
+      }
+    })
+  } catch (error) {
+    console.error('Error loading inventory:', error)
+    return []
+  }
+}
+
+// ============================================================================
+// GASTOS
+// ============================================================================
+
+export interface AdminGasto {
+  id: string
+  concepto: string
+  categoria: string
+  monto: number
+  moneda: string
+  fecha: Date
+  proveedor?: string
+  formaPago?: string
+  estado: string
+  notas?: string
+  createdAt: Date
+}
+
+export async function getFarmGastos(farmId: string): Promise<AdminGasto[]> {
+  try {
+    const gastosRef = collection(db, 'farms', farmId, 'gastos')
+    const q = query(gastosRef, orderBy('fecha', 'desc'), limit(100))
+    const snapshot = await getDocs(q)
+    
+    return snapshot.docs.map(docSnap => {
+      const data = docSnap.data()
+      return {
+        id: docSnap.id,
+        concepto: data.concepto || data.descripcion || 'Sin concepto',
+        categoria: data.categoria || 'general',
+        monto: data.monto || data.amount || 0,
+        moneda: data.moneda || data.currency || 'DOP',
+        fecha: data.fecha?.toDate() || data.date?.toDate() || new Date(),
+        proveedor: data.proveedor,
+        formaPago: data.formaPago || data.metodoPago,
+        estado: data.estado || 'pagado',
+        notas: data.notas || data.notes,
+        createdAt: data.createdAt?.toDate() || new Date(),
+      }
+    })
+  } catch (error) {
+    console.error('Error loading gastos:', error)
+    return []
+  }
+}
+
+// ============================================================================
+// VENTAS
+// ============================================================================
+
+export interface AdminVenta {
+  id: string
+  numero?: string
+  cliente?: {
+    nombre: string
+    identificacion?: string
+    telefono?: string
+  }
+  items: {
+    tipo: string
+    cantidad: number
+    precioUnitario: number
+    subtotal: number
+  }[]
+  subtotal: number
+  impuestos: number
+  total: number
+  moneda: string
+  estado: 'pendiente' | 'pagada' | 'parcial' | 'anulada'
+  fecha: Date
+  createdAt: Date
+}
+
+export async function getFarmVentas(farmId: string): Promise<AdminVenta[]> {
+  try {
+    const ventasRef = collection(db, 'farms', farmId, 'ventas')
+    const q = query(ventasRef, orderBy('fecha', 'desc'), limit(100))
+    const snapshot = await getDocs(q)
+    
+    return snapshot.docs.map(docSnap => {
+      const data = docSnap.data()
+      return {
+        id: docSnap.id,
+        numero: data.numero || data.numeroVenta,
+        cliente: data.cliente,
+        items: data.items || data.productos || [],
+        subtotal: data.subtotal || 0,
+        impuestos: data.impuestos || data.itbis || 0,
+        total: data.total || 0,
+        moneda: data.moneda || 'DOP',
+        estado: data.estado || 'pendiente',
+        fecha: data.fecha?.toDate() || new Date(),
+        createdAt: data.createdAt?.toDate() || new Date(),
+      }
+    })
+  } catch (error) {
+    console.error('Error loading ventas:', error)
+    return []
+  }
+}
+
+// ============================================================================
+// FACTURAS
+// ============================================================================
+
+export interface AdminFactura {
+  id: string
+  numero: string
+  tipo: 'credito_fiscal' | 'consumidor_final' | 'nota_credito' | 'nota_debito' | 'proforma'
+  cliente: {
+    nombre: string
+    rnc?: string
+    direccion?: string
+    telefono?: string
+    email?: string
+  }
+  items: {
+    descripcion: string
+    cantidad: number
+    precioUnitario: number
+    subtotal: number
+  }[]
+  subtotal: number
+  impuestos: number
+  total: number
+  moneda: string
+  estado: 'emitida' | 'pagada' | 'anulada' | 'vencida'
+  fechaEmision: Date
+  fechaVencimiento?: Date
+  ncf?: string
+  secuencia?: string
+  ventaId?: string
+  createdAt: Date
+}
+
+export async function getFarmFacturas(farmId: string): Promise<AdminFactura[]> {
+  try {
+    const facturasRef = collection(db, 'farms', farmId, 'facturas')
+    const q = query(facturasRef, orderBy('fechaEmision', 'desc'), limit(100))
+    const snapshot = await getDocs(q)
+    
+    return snapshot.docs.map(docSnap => {
+      const data = docSnap.data()
+      return {
+        id: docSnap.id,
+        numero: data.numero || data.numeroFactura || '',
+        tipo: data.tipo || data.tipoComprobante || 'consumidor_final',
+        cliente: data.cliente || { nombre: 'N/A' },
+        items: data.items || data.lineas || [],
+        subtotal: data.subtotal || 0,
+        impuestos: data.impuestos || data.itbis || 0,
+        total: data.total || 0,
+        moneda: data.moneda || 'DOP',
+        estado: data.estado || 'emitida',
+        fechaEmision: data.fechaEmision?.toDate() || data.fecha?.toDate() || new Date(),
+        fechaVencimiento: data.fechaVencimiento?.toDate(),
+        ncf: data.ncf,
+        secuencia: data.secuencia,
+        ventaId: data.ventaId,
+        createdAt: data.createdAt?.toDate() || new Date(),
+      }
+    })
+  } catch (error) {
+    console.error('Error loading facturas:', error)
+    return []
+  }
+}
+
+// ============================================================================
+// ESTADÍSTICAS DE GRANJA
+// ============================================================================
+
+export interface FarmStats {
+  totalLotes: number
+  lotesPonedoras: number
+  lotesEngorde: number
+  lotesLevantes: number
+  totalGalpones: number
+  totalGastos: number
+  totalVentas: number
+  totalFacturas: number
+  inventarioItems: number
+  avesActivas: number
+}
+
+export async function getFarmStats(farmId: string): Promise<FarmStats> {
+  const [lotes, galpones, gastos, ventas, facturas, inventario] = await Promise.all([
+    getFarmLotes(farmId),
+    getFarmGalpones(farmId),
+    getFarmGastos(farmId),
+    getFarmVentas(farmId),
+    getFarmFacturas(farmId),
+    getFarmInventory(farmId),
+  ])
+
+  const avesActivas = lotes
+    .filter(l => l.estado === 'ACTIVO')
+    .reduce((sum, l) => sum + l.cantidadActual, 0)
+
+  return {
+    totalLotes: lotes.length,
+    lotesPonedoras: lotes.filter(l => l.tipo === 'ponedoras').length,
+    lotesEngorde: lotes.filter(l => l.tipo === 'engorde').length,
+    lotesLevantes: lotes.filter(l => l.tipo === 'levantes').length,
+    totalGalpones: galpones.length,
+    totalGastos: gastos.reduce((sum, g) => sum + g.monto, 0),
+    totalVentas: ventas.reduce((sum, v) => sum + v.total, 0),
+    totalFacturas: facturas.length,
+    inventarioItems: inventario.length,
+    avesActivas,
+  }
+}
+
+// ============================================================================
+// GESTIÓN DE SUSCRIPCIONES (ADMIN)
+// ============================================================================
+
+export interface UpdateSubscriptionData {
+  plan: SubscriptionPlan
+  status: SubscriptionStatus
+  period?: SubscriptionPeriod
+  startDate?: Date
+  endDate?: Date
+  trialEndsAt?: Date
+  notes?: string // Nota interna del admin
+}
+
+export interface SubscriptionHistory {
+  id: string
+  userId: string
+  previousPlan: SubscriptionPlan
+  newPlan: SubscriptionPlan
+  previousStatus: SubscriptionStatus
+  newStatus: SubscriptionStatus
+  changedBy: string // Admin UID
+  changedByEmail: string
+  reason?: string
+  notes?: string
+  createdAt: Date
+}
+
+/**
+ * Actualiza la suscripción de un usuario desde el panel de admin
+ * Permite cambiar plan, estado, fechas de inicio/fin
+ */
+export async function updateUserSubscription(
+  userId: string,
+  data: UpdateSubscriptionData,
+  adminInfo: { uid: string; email: string },
+  reason?: string
+): Promise<void> {
+  const userRef = doc(db, 'users', userId)
+  
+  // Obtener datos actuales del usuario
+  const userDoc = await getDoc(userRef)
+  if (!userDoc.exists()) {
+    throw new Error('Usuario no encontrado')
+  }
+  
+  const userData = userDoc.data()
+  const previousSubscription = userData.subscription || { plan: 'FREE', status: 'inactive' }
+  
+  // Preparar datos de suscripción para Firestore
+  const subscriptionUpdate: Record<string, unknown> = {
+    'subscription.plan': data.plan,
+    'subscription.status': data.status,
+    'subscription.updatedAt': Timestamp.now(),
+    'subscription.updatedBy': adminInfo.uid,
+  }
+  
+  if (data.period) {
+    subscriptionUpdate['subscription.period'] = data.period
+  }
+  
+  if (data.startDate) {
+    subscriptionUpdate['subscription.startDate'] = Timestamp.fromDate(data.startDate)
+  }
+  
+  if (data.endDate) {
+    subscriptionUpdate['subscription.endDate'] = Timestamp.fromDate(data.endDate)
+  } else if (data.plan === 'FREE') {
+    // Si se cambia a FREE, quitar fecha de vencimiento
+    subscriptionUpdate['subscription.endDate'] = null
+  }
+  
+  if (data.trialEndsAt) {
+    subscriptionUpdate['subscription.trialEndsAt'] = Timestamp.fromDate(data.trialEndsAt)
+  }
+  
+  if (data.notes) {
+    subscriptionUpdate['subscription.adminNotes'] = data.notes
+  }
+  
+  // Actualizar documento del usuario
+  await updateDoc(userRef, subscriptionUpdate)
+  
+  // Registrar en historial de cambios
+  const historyRef = collection(db, 'subscription_history')
+  const historyData = {
+    userId,
+    previousPlan: previousSubscription.plan || 'FREE',
+    newPlan: data.plan,
+    previousStatus: previousSubscription.status || 'inactive',
+    newStatus: data.status,
+    changedBy: adminInfo.uid,
+    changedByEmail: adminInfo.email,
+    reason: reason || 'Cambio manual desde Admin Panel',
+    notes: data.notes,
+    startDate: data.startDate ? Timestamp.fromDate(data.startDate) : null,
+    endDate: data.endDate ? Timestamp.fromDate(data.endDate) : null,
+    createdAt: Timestamp.now(),
+  }
+  
+  const { addDoc } = await import('firebase/firestore')
+  await addDoc(historyRef, historyData)
+}
+
+/**
+ * Obtener historial de cambios de suscripción de un usuario
+ */
+export async function getUserSubscriptionHistory(userId: string): Promise<SubscriptionHistory[]> {
+  const historyRef = collection(db, 'subscription_history')
+  const q = query(
+    historyRef, 
+    where('userId', '==', userId),
+    orderBy('createdAt', 'desc'),
+    limit(50)
+  )
+  
+  const snapshot = await getDocs(q)
+  
+  return snapshot.docs.map(docSnap => {
+    const data = docSnap.data()
+    return {
+      id: docSnap.id,
+      userId: data.userId,
+      previousPlan: data.previousPlan,
+      newPlan: data.newPlan,
+      previousStatus: data.previousStatus,
+      newStatus: data.newStatus,
+      changedBy: data.changedBy,
+      changedByEmail: data.changedByEmail,
+      reason: data.reason,
+      notes: data.notes,
+      createdAt: data.createdAt?.toDate() || new Date(),
+    }
+  })
+}
+
+/**
+ * Calcular fecha de vencimiento basada en el periodo
+ */
+export function calculateEndDate(startDate: Date, period: SubscriptionPeriod): Date {
+  const endDate = new Date(startDate)
+  
+  switch (period) {
+    case 'monthly':
+      endDate.setMonth(endDate.getMonth() + 1)
+      break
+    case 'quarterly':
+      endDate.setMonth(endDate.getMonth() + 3)
+      break
+    case 'annual':
+      endDate.setFullYear(endDate.getFullYear() + 1)
+      break
+  }
+  
+  return endDate
+}
+
+/**
+ * Extender suscripción por X días
+ */
+export async function extendSubscription(
+  userId: string,
+  days: number,
+  adminInfo: { uid: string; email: string },
+  reason?: string
+): Promise<void> {
+  const userRef = doc(db, 'users', userId)
+  const userDoc = await getDoc(userRef)
+  
+  if (!userDoc.exists()) {
+    throw new Error('Usuario no encontrado')
+  }
+  
+  const userData = userDoc.data()
+  const currentEndDate = userData.subscription?.endDate?.toDate() || new Date()
+  
+  // Si la fecha actual ya pasó, extender desde hoy
+  const baseDate = currentEndDate > new Date() ? currentEndDate : new Date()
+  const newEndDate = new Date(baseDate)
+  newEndDate.setDate(newEndDate.getDate() + days)
+  
+  await updateDoc(userRef, {
+    'subscription.endDate': Timestamp.fromDate(newEndDate),
+    'subscription.status': 'active',
+    'subscription.updatedAt': Timestamp.now(),
+    'subscription.updatedBy': adminInfo.uid,
+  })
+  
+  // Registrar en historial
+  const historyRef = collection(db, 'subscription_history')
+  const { addDoc } = await import('firebase/firestore')
+  await addDoc(historyRef, {
+    userId,
+    previousPlan: userData.subscription?.plan || 'FREE',
+    newPlan: userData.subscription?.plan || 'FREE',
+    previousStatus: userData.subscription?.status || 'inactive',
+    newStatus: 'active',
+    changedBy: adminInfo.uid,
+    changedByEmail: adminInfo.email,
+    reason: reason || `Extensión de ${days} días desde Admin Panel`,
+    notes: `Fecha anterior: ${currentEndDate.toLocaleDateString()}, Nueva fecha: ${newEndDate.toLocaleDateString()}`,
+    createdAt: Timestamp.now(),
+  })
+}
+
+/**
+ * Cancelar suscripción de un usuario
+ */
+export async function cancelUserSubscription(
+  userId: string,
+  adminInfo: { uid: string; email: string },
+  reason?: string,
+  immediate = false
+): Promise<void> {
+  const userRef = doc(db, 'users', userId)
+  const userDoc = await getDoc(userRef)
+  
+  if (!userDoc.exists()) {
+    throw new Error('Usuario no encontrado')
+  }
+  
+  const userData = userDoc.data()
+  
+  const updateData: Record<string, unknown> = {
+    'subscription.updatedAt': Timestamp.now(),
+    'subscription.updatedBy': adminInfo.uid,
+    'subscription.cancelReason': reason,
+    'subscription.cancelledAt': Timestamp.now(),
+  }
+  
+  if (immediate) {
+    // Cancelación inmediata - cambiar a FREE
+    updateData['subscription.plan'] = 'FREE'
+    updateData['subscription.status'] = 'cancelled'
+    updateData['subscription.endDate'] = Timestamp.now()
+  } else {
+    // Cancelar al final del periodo
+    updateData['subscription.cancelAtPeriodEnd'] = true
+    updateData['subscription.status'] = 'active' // Mantiene activo hasta que expire
+  }
+  
+  await updateDoc(userRef, updateData)
+  
+  // Registrar en historial
+  const historyRef = collection(db, 'subscription_history')
+  const { addDoc } = await import('firebase/firestore')
+  await addDoc(historyRef, {
+    userId,
+    previousPlan: userData.subscription?.plan || 'FREE',
+    newPlan: immediate ? 'FREE' : userData.subscription?.plan,
+    previousStatus: userData.subscription?.status || 'inactive',
+    newStatus: immediate ? 'cancelled' : 'active',
+    changedBy: adminInfo.uid,
+    changedByEmail: adminInfo.email,
+    reason: reason || (immediate ? 'Cancelación inmediata desde Admin' : 'Cancelación al final del periodo'),
+    createdAt: Timestamp.now(),
   })
 }

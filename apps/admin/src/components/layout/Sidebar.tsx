@@ -1,5 +1,8 @@
 import { NavLink, useNavigate } from "react-router-dom"
-import { LayoutDashboard, Building2, Users, CreditCard, BarChart3, LogOut, ChevronLeft, Egg } from "lucide-react"
+import { 
+  LayoutDashboard, Building2, Users, CreditCard, BarChart3, LogOut, ChevronLeft, Egg,
+  DollarSign, Headphones, Bell, Shield, AlertTriangle
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Logo } from "@/components/shared/Logo"
 import { Button } from "@/components/ui/button"
@@ -7,13 +10,33 @@ import { Separator } from "@/components/ui/separator"
 import { useAuthStore } from "@/stores"
 import { useState } from "react"
 
-const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Granjas", href: "/farms", icon: Building2 },
-  { name: "Lotes", href: "/lotes", icon: Egg },
-  { name: "Usuarios", href: "/users", icon: Users },
-  { name: "Suscripciones", href: "/subscriptions", icon: CreditCard },
-  { name: "Analytics", href: "/analytics", icon: BarChart3 },
+const navSections = [
+  {
+    label: 'Principal',
+    items: [
+      { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { name: "Business", href: "/business", icon: DollarSign },
+      { name: "Granjas", href: "/farms", icon: Building2 },
+      { name: "Lotes", href: "/lotes", icon: Egg },
+      { name: "Usuarios", href: "/users", icon: Users },
+      { name: "Suscripciones", href: "/subscriptions", icon: CreditCard },
+    ]
+  },
+  {
+    label: 'Soporte',
+    items: [
+      { name: "Tickets", href: "/support", icon: Headphones },
+      { name: "Bloqueadas", href: "/farms/blocked", icon: AlertTriangle },
+    ]
+  },
+  {
+    label: 'Sistema',
+    items: [
+      { name: "Analytics", href: "/analytics", icon: BarChart3 },
+      { name: "Push", href: "/notifications/push", icon: Bell },
+      { name: "Auditoría", href: "/audit", icon: Shield },
+    ]
+  }
 ]
 
 export function Sidebar() {
@@ -31,7 +54,6 @@ export function Sidebar() {
       "flex flex-col border-r border-slate-200 bg-white transition-all duration-300",
       collapsed ? "w-16" : "w-64"
     )}>
-      {/* Logo */}
       <div className={cn("flex h-16 items-center border-b border-slate-200 px-4", collapsed && "justify-center")}>
         {collapsed ? (
           <img src="/images/icon.png" alt="Gallinapp" className="h-8 w-8" />
@@ -40,30 +62,35 @@ export function Sidebar() {
         )}
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 space-y-1 p-2">
-        {navigation.map((item) => (
-          <NavLink
-            key={item.name}
-            to={item.href}
-            className={({ isActive }) => cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-              isActive
-                ? "bg-primary-500 text-white"
-                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
-              collapsed && "justify-center px-2"
+      <nav className="flex-1 overflow-y-auto p-2 space-y-4">
+        {navSections.map((section) => (
+          <div key={section.label} className="space-y-1">
+            {!collapsed && (
+              <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                {section.label}
+              </div>
             )}
-            title={collapsed ? item.name : undefined}
-          >
-            <item.icon className="h-5 w-5 shrink-0" />
-            {!collapsed && <span>{item.name}</span>}
-          </NavLink>
+            {section.items.map((item) => (
+              <NavLink
+                key={item.name}
+                to={item.href}
+                className={({ isActive }) => cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  isActive ? "bg-primary-500 text-white" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+                  collapsed && "justify-center px-2"
+                )}
+                title={collapsed ? item.name : undefined}
+              >
+                <item.icon className="h-5 w-5 shrink-0" />
+                {!collapsed && <span>{item.name}</span>}
+              </NavLink>
+            ))}
+          </div>
         ))}
       </nav>
 
       <Separator />
 
-      {/* Collapse Button */}
       <div className="p-2">
         <Button
           variant="ghost"
@@ -78,7 +105,6 @@ export function Sidebar() {
 
       <Separator />
 
-      {/* Sign Out */}
       <div className="p-2">
         <Button
           variant="ghost"

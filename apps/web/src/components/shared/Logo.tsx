@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils"
 
 interface LogoProps {
-  variant?: "line" | "white" | "icon"
+  variant?: "line" | "white" | "icon" | "white-horizontal"
   className?: string
   height?: number
 }
@@ -10,6 +10,7 @@ const logoPaths = {
   line: "/images/full-logo-line.png",
   white: "/images/full-logo-white.png",
   icon: "/images/icon.png",
+  "white-horizontal": "/images/full-logo-white-horizontal.svg",
 }
 
 export function Logo({ variant = "line", className, height = 40 }: LogoProps) {
@@ -22,12 +23,4 @@ export function Logo({ variant = "line", className, height = 40 }: LogoProps) {
     />
   )
 }
-
-
-
-
-
-
-
-
 

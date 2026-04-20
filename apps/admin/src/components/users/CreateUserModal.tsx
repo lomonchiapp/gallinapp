@@ -184,9 +184,10 @@ export function CreateUserModal({ open, onOpenChange, onSuccess }: CreateUserMod
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="FREE">Free</SelectItem>
-                  <SelectItem value="PRO">Pro</SelectItem>
-                  <SelectItem value="ENTERPRISE">Enterprise</SelectItem>
+                  <SelectItem value="FREE">Colaborador (Free)</SelectItem>
+                  <SelectItem value="BASIC">Básico</SelectItem>
+                  <SelectItem value="PRO">Gallinapp Pro</SelectItem>
+                  <SelectItem value="HACIENDA">Hacienda</SelectItem>
                 </SelectContent>
               </Select>
             </div>

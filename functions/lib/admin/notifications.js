@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onFarmCreated = exports.onUserUpdated = exports.onUserCreated = void 0;
+exports.onAccessRequestUpdated = exports.onFarmCreated = exports.onUserUpdated = exports.onUserCreated = void 0;
 const firestore_1 = require("firebase-functions/v2/firestore");
 const firestore_2 = require("firebase-admin/firestore");
 const app_1 = require("firebase-admin/app");
@@ -107,6 +107,64 @@ exports.onFarmCreated = (0, firestore_1.onDocumentCreated)('farms/{farmId}', asy
     }
     catch (error) {
         console.error('Error creating farm notification:', error);
+    }
+});
+/**
+ * Trigger cuando se actualiza una solicitud de acceso a una granja.
+ * Si el estado pasa a APPROVED o REJECTED, crea una notificación para el solicitante.
+ */
+exports.onAccessRequestUpdated = (0, firestore_1.onDocumentUpdated)('accessRequests/{requestId}', async (event) => {
+    const beforeData = event.data?.before.data();
+    const afterData = event.data?.after.data();
+    if (!beforeData || !afterData)
+        return;
+    const previousStatus = beforeData.status;
+    const newStatus = afterData.status;
+    if (previousStatus === newStatus)
+        return;
+    const requestId = event.params.requestId;
+    const requesterId = afterData.requesterId;
+    const farmId = afterData.farmId;
+    if (newStatus !== 'APPROVED' && newStatus !== 'REJECTED')
+        return;
+    let farmName = '';
+    if (farmId) {
+        try {
+            const farmDoc = await db.collection('farms').doc(farmId).get();
+            if (farmDoc.exists) {
+                farmName = farmDoc.data()?.name || '';
+            }
+        }
+        catch (e) {
+            console.warn('Could not resolve farm name:', e);
+        }
+    }
+    try {
+        const notification = {
+            userId: requesterId,
+            type: newStatus === 'APPROVED' ? 'ACCESS_REQUEST_APPROVED' : 'ACCESS_REQUEST_REJECTED',
+            category: 'EVENT',
+            priority: 'MEDIUM',
+            title: newStatus === 'APPROVED'
+                ? 'Solicitud de acceso aprobada'
+                : 'Solicitud de acceso rechazada',
+            message: newStatus === 'APPROVED'
+                ? `Tu solicitud para unirte a "${farmName || 'la granja'}" ha sido aprobada. Ya puedes acceder desde la app.`
+                : `Tu solicitud para unirte a "${farmName || 'la granja'}" ha sido rechazada.`,
+            data: {
+                farmId,
+                farmName,
+                requestId,
+            },
+            status: 'UNREAD',
+            createdAt: firestore_2.FieldValue.serverTimestamp(),
+            updatedAt: firestore_2.FieldValue.serverTimestamp(),
+        };
+        await db.collection('notifications').add(notification);
+        console.log(`Access request ${newStatus.toLowerCase()} notification sent to ${requesterId} for request ${requestId}`);
+    }
+    catch (error) {
+        console.error('Error creating access request notification:', error);
     }
 });
 //# sourceMappingURL=notifications.js.map

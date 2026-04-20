@@ -1,13 +1,19 @@
 /**
  * Tipos centralizados para suscripciones
  * Single Source of Truth para datos de suscripción
+ * 
+ * PRECIOS OFICIALES (USD):
+ * - FREE: $0 (solo colaborador)
+ * - BASIC: $39.99/mes, $99.99/trimestre, $199.99/año
+ * - PRO: $49.99/mes, $124.99/trimestre, $249.99/año
+ * - HACIENDA: $99.99/mes, $249.99/trimestre, $499.99/año
  */
 
 export const enum SubscriptionPlan {
   FREE = 'free',
   BASIC = 'basic',
   PRO = 'pro',
-  ENTERPRISE = 'enterprise'
+  HACIENDA = 'hacienda' // Antes "enterprise", ahora "Estate Plus" en inglés
 }
 
 export const enum SubscriptionStatus {
@@ -19,18 +25,27 @@ export const enum SubscriptionStatus {
 }
 
 export interface SubscriptionLimits {
-  maxLotes: number;
+  maxFarms: number;
+  maxLotesPerType: number; // Lotes por tipo (ponedoras, engorde, levante)
   maxCollaborators: number;
   maxStorage: number; // GB
-  maxTransactions: number; // por mes
   features: {
-    analytics: boolean;
+    // Módulos básicos (todos los planes de pago)
+    mortalityRecords: boolean;
+    productionRecords: boolean;
+    productionCalculations: boolean;
+    costCalculations: boolean;
+    sheds: boolean; // Galpones
+    expensesModule: boolean;
+    // Módulos PRO+
+    inventoryModule: boolean;
+    salesModule: boolean;
+    electronicInvoicing: boolean;
+    // Extras
     exports: boolean;
     apiAccess: boolean;
     customReports: boolean;
-    multiLocation: boolean;
-    integrations: boolean;
-    advancedAlerts: boolean;
+    prioritySupport: boolean;
   };
 }
 
@@ -48,63 +63,87 @@ export interface Subscription {
 // Límites por plan - Single Source of Truth
 export const SUBSCRIPTION_LIMITS: Record<SubscriptionPlan, SubscriptionLimits> = {
   [SubscriptionPlan.FREE]: {
-    maxLotes: 0, // Solo colaborador
-    maxCollaborators: 1, // El owner
-    maxStorage: 0.1, // 100MB
-    maxTransactions: 0,
+    maxFarms: 0, // Solo puede colaborar, no crear granjas
+    maxLotesPerType: 0,
+    maxCollaborators: 0, // No es owner de nada
+    maxStorage: 0,
     features: {
-      analytics: false,
+      mortalityRecords: true, // Puede registrar como colaborador
+      productionRecords: true,
+      productionCalculations: false,
+      costCalculations: false,
+      sheds: false,
+      expensesModule: false,
+      inventoryModule: false,
+      salesModule: false,
+      electronicInvoicing: false,
       exports: false,
       apiAccess: false,
       customReports: false,
-      multiLocation: false,
-      integrations: false,
-      advancedAlerts: false,
+      prioritySupport: false,
     }
   },
   [SubscriptionPlan.BASIC]: {
-    maxLotes: 10,
-    maxCollaborators: 3,
-    maxStorage: 5, // 5GB
-    maxTransactions: 500,
+    maxFarms: 1,
+    maxLotesPerType: 5, // 5 lotes de ponedoras, 5 de engorde, 5 de levante
+    maxCollaborators: 2,
+    maxStorage: 2, // 2GB
     features: {
-      analytics: true,
+      mortalityRecords: true,
+      productionRecords: true,
+      productionCalculations: true,
+      costCalculations: true,
+      sheds: true,
+      expensesModule: true,
+      inventoryModule: false,
+      salesModule: false,
+      electronicInvoicing: false,
       exports: true,
       apiAccess: false,
       customReports: false,
-      multiLocation: false,
-      integrations: false,
-      advancedAlerts: true,
+      prioritySupport: false,
     }
   },
   [SubscriptionPlan.PRO]: {
-    maxLotes: 50,
+    maxFarms: 3,
+    maxLotesPerType: 20,
     maxCollaborators: 10,
-    maxStorage: 25, // 25GB
-    maxTransactions: 2000,
+    maxStorage: 10, // 10GB
     features: {
-      analytics: true,
+      mortalityRecords: true,
+      productionRecords: true,
+      productionCalculations: true,
+      costCalculations: true,
+      sheds: true,
+      expensesModule: true,
+      inventoryModule: true,
+      salesModule: true,
+      electronicInvoicing: true,
       exports: true,
       apiAccess: true,
       customReports: true,
-      multiLocation: true,
-      integrations: false,
-      advancedAlerts: true,
+      prioritySupport: true,
     }
   },
-  [SubscriptionPlan.ENTERPRISE]: {
-    maxLotes: -1, // Unlimited
-    maxCollaborators: -1, // Unlimited
-    maxStorage: -1, // Unlimited
-    maxTransactions: -1, // Unlimited
+  [SubscriptionPlan.HACIENDA]: {
+    maxFarms: 10,
+    maxLotesPerType: -1, // Ilimitado
+    maxCollaborators: 50,
+    maxStorage: 50, // 50GB
     features: {
-      analytics: true,
+      mortalityRecords: true,
+      productionRecords: true,
+      productionCalculations: true,
+      costCalculations: true,
+      sheds: true,
+      expensesModule: true,
+      inventoryModule: true,
+      salesModule: true,
+      electronicInvoicing: true,
       exports: true,
       apiAccess: true,
       customReports: true,
-      multiLocation: true,
-      integrations: true,
-      advancedAlerts: true,
+      prioritySupport: true,
     }
   }
 };
@@ -117,6 +156,8 @@ export interface PlanPricingPeriod {
 }
 
 export interface PlanPricing {
+  name: string;
+  nameEn: string; // Nombre en inglés
   description: string;
   features: string[];
   popular?: boolean;
@@ -125,83 +166,119 @@ export interface PlanPricing {
   annual: PlanPricingPeriod;
 }
 
+// Info del plan FREE (no tiene precios, solo info visual)
+export const FREE_PLAN_INFO = {
+  name: 'Colaborador',
+  nameEn: 'Collaborator',
+  description: 'Acceso como colaborador a granjas.',
+  features: [
+    'Unirse a granjas existentes',
+    'Registrar mortalidad',
+    'Registrar producción',
+    'Ver datos de la granja',
+  ],
+};
+
 // Precios por plan - Single Source of Truth
+// NOTA: Estos precios DEBEN coincidir con los configurados en RevenueCat/App Store/Play Store
 export const SUBSCRIPTION_PRICING: Record<Exclude<SubscriptionPlan, SubscriptionPlan.FREE>, PlanPricing> = {
   [SubscriptionPlan.BASIC]: {
-    description: "Para productores que están empezando.",
-    features: ["Hasta 10 lotes", "3 colaboradores", "5 GB almacenamiento", "500 transacciones/mes", "Alertas avanzadas"],
+    name: 'Básico',
+    nameEn: 'Basic',
+    description: "Tu primera granja digital.",
+    features: [
+      "1 granja",
+      "2 colaboradores",
+      "5 lotes por tipo",
+      "Registros de mortalidad",
+      "Registros de producción",
+      "Cálculos de producción",
+      "Cálculos de costos",
+      "Galpones",
+      "Módulo de gastos",
+    ],
     monthly: {
-      price: 19.99,
+      price: 39.99,
       stripePriceId: 'price_basic_monthly',
-      revenueCatId: 'basic_monthly',
+      revenueCatId: 'basico_mensual',
     },
     quarterly: {
-      price: 54.99,
+      price: 99.99,
       stripePriceId: 'price_basic_quarterly',
-      revenueCatId: 'basic_trimestral',
-      savingsLabel: 'Ahorra 8%',
+      revenueCatId: 'basico_trimestral',
+      savingsLabel: 'Ahorra 17%',
     },
     annual: {
       price: 199.99,
       stripePriceId: 'price_basic_annual',
-      revenueCatId: 'basic_annual',
-      savingsLabel: 'Ahorra 17%',
+      revenueCatId: 'basico_anual',
+      savingsLabel: 'Ahorra 58%',
     },
   },
   [SubscriptionPlan.PRO]: {
-    description: "Para granjas comerciales en crecimiento.",
-    features: ["Hasta 50 lotes", "10 colaboradores", "25 GB almacenamiento", "Facturación y Ventas Pro", "Acceso API", "Reportes personalizados"],
+    name: 'Gallinapp Pro',
+    nameEn: 'Gallinapp Pro',
+    description: "Para granjas en crecimiento.",
+    features: [
+      "Todo lo del plan Básico",
+      "3 granjas",
+      "10 colaboradores",
+      "20 lotes por tipo",
+      "Módulo de inventario",
+      "Módulo de ventas",
+      "Facturación electrónica",
+      "Acceso API",
+      "Soporte prioritario",
+    ],
     popular: true,
     monthly: {
       price: 49.99,
       stripePriceId: 'price_pro_monthly',
-      revenueCatId: 'pro_monthly',
+      revenueCatId: 'pro_mensual',
     },
     quarterly: {
-      price: 134.99,
+      price: 124.99,
       stripePriceId: 'price_pro_quarterly',
       revenueCatId: 'pro_trimestral',
-      savingsLabel: 'Ahorra 10%',
+      savingsLabel: 'Ahorra 17%',
+    },
+    annual: {
+      price: 249.99,
+      stripePriceId: 'price_pro_annual',
+      revenueCatId: 'pro_anual',
+      savingsLabel: 'Ahorra 58%',
+    },
+  },
+  [SubscriptionPlan.HACIENDA]: {
+    name: 'Hacienda',
+    nameEn: 'Estate Plus',
+    description: "Para operaciones grandes.",
+    features: [
+      "Todo lo del plan Pro",
+      "10 granjas",
+      "50 colaboradores",
+      "Lotes ilimitados",
+      "Almacenamiento 50GB",
+      "Reportes personalizados",
+      "Soporte dedicado",
+    ],
+    monthly: {
+      price: 99.99,
+      stripePriceId: 'price_hacienda_monthly',
+      revenueCatId: 'hacienda_mensual',
+    },
+    quarterly: {
+      price: 249.99,
+      stripePriceId: 'price_hacienda_quarterly',
+      revenueCatId: 'hacienda_trimestral',
+      savingsLabel: 'Ahorra 17%',
     },
     annual: {
       price: 499.99,
-      stripePriceId: 'price_pro_annual',
-      revenueCatId: 'pro_annual',
-      savingsLabel: 'Ahorra 17%',
-    },
-  },
-  [SubscriptionPlan.ENTERPRISE]: {
-    description: "Para grandes operaciones y cooperativas.",
-    features: ["Lotes ilimitados", "Colaboradores ilimitados", "Almacenamiento ilimitado", "Transacciones ilimitadas", "Soporte prioritario 24/7", "Gerente de cuenta dedicado"],
-    monthly: {
-      price: 99.99,
-      stripePriceId: 'price_enterprise_monthly',
-      revenueCatId: 'enterprise_monthly',
-    },
-    quarterly: {
-      price: 269.99,
-      stripePriceId: 'price_enterprise_quarterly',
-      revenueCatId: 'enterprise_trimestral',
-      savingsLabel: 'Ahorra 10%',
-    },
-    annual: {
-      price: 999.99,
-      stripePriceId: 'price_enterprise_annual',
-      revenueCatId: 'enterprise_annual',
-      savingsLabel: 'Ahorra 17%',
+      stripePriceId: 'price_hacienda_annual',
+      revenueCatId: 'hacienda_anual',
+      savingsLabel: 'Ahorra 58%',
     },
   },
 };
-
-// Suscripción por defecto para nuevas cuentas
-export const DEFAULT_SUBSCRIPTION: Subscription = {
-  plan: SubscriptionPlan.FREE,
-  status: SubscriptionStatus.TRIALING,
-  startDate: new Date(),
-  limits: SUBSCRIPTION_LIMITS[SubscriptionPlan.FREE],
-  trialEndsAt: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 días gratis
-};
-
-
-
 

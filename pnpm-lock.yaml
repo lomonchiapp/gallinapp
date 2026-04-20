@@ -316,7 +316,7 @@ importers:
         specifier: ^54.0.14
         version: 54.0.14(expo@54.0.33)
       '@types/react':
-        specifier: ~19.1.17
+        specifier: ~19.1.0
         version: 19.1.17
       babel-plugin-module-resolver:
         specifier: ^5.0.3
@@ -14458,7 +14458,7 @@ snapshots:
   metro-source-map@0.83.3:
     dependencies:
       '@babel/traverse': 7.28.5
-      '@babel/traverse--for-generate-function-map': '@babel/traverse@7.28.5'
+      '@babel/traverse--for-generate-function-map': '@babel/traverse@7.29.0'
       '@babel/types': 7.28.5
       flow-enums-runtime: 0.0.6
       invariant: 2.2.4

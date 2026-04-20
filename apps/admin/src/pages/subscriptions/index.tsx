@@ -1,11 +1,27 @@
 import { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
-import { Loader2, CreditCard, TrendingUp, CheckCircle, Users, Building2, Crown, Search } from "lucide-react"
+import { 
+  Loader2, TrendingUp, CheckCircle, Users, Building2, Crown, 
+  Search, Rocket, UserCircle, DollarSign, ArrowUpRight, ArrowDownRight 
+} from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { getUsersWithSubscriptions, getSubscriptionStats, type UserWithSubscription, type SubscriptionStats } from "@/services/admin.service"
+import { ManageSubscriptionModal } from "@/components/subscriptions/ManageSubscriptionModal"
+import { useAuthStore } from "@/stores/authStore"
+import { 
+  getUsersWithSubscriptions, 
+  getSubscriptionStats, 
+  getBusinessMetrics,
+  type UserWithSubscription
+} from "@/services/admin.service"
+import { 
+  type SubscriptionStats, 
+  type SubscriptionPlan,
+  PLAN_COLORS, 
+  PLAN_LABELS, 
+  STATUS_COLORS 
+} from "@/types/subscription"
 
 function formatDate(date?: Date): string {
   if (!date) return '—'
@@ -16,49 +32,79 @@ function formatDate(date?: Date): string {
   })
 }
 
-const planColors: Record<string, { bg: string; text: string; border: string }> = {
-  FREE: { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-200' },
-  PRO: { bg: 'bg-primary-100', text: 'text-primary-700', border: 'border-primary-200' },
-  ENTERPRISE: { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200' },
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(amount)
 }
 
-const statusColors: Record<string, string> = {
-  active: 'bg-green-100 text-green-700',
-  canceled: 'bg-red-100 text-red-700',
-  past_due: 'bg-yellow-100 text-yellow-700',
-  trialing: 'bg-blue-100 text-blue-700',
-}
+type FilterPlan = 'all' | SubscriptionPlan
 
-type FilterPlan = 'all' | 'FREE' | 'PRO' | 'ENTERPRISE'
+const planIcons: Record<SubscriptionPlan, React.ComponentType<{ className?: string }>> = {
+  FREE: UserCircle,
+  BASIC: Rocket,
+  PRO: TrendingUp,
+  HACIENDA: Crown,
+}
 
 export function SubscriptionsPage() {
+  const { admin } = useAuthStore()
   const [users, setUsers] = useState<UserWithSubscription[]>([])
   const [stats, setStats] = useState<SubscriptionStats | null>(null)
+  const [metrics, setMetrics] = useState<{
+    mrr: number
+    arr: number
+    churnRate: number
+    conversionRate: number
+  } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [filter, setFilter] = useState<FilterPlan>('all')
   const [search, setSearch] = useState('')
+  
+  // Modal de gestión de suscripción
+  const [selectedUser, setSelectedUser] = useState<UserWithSubscription | null>(null)
+  const [isManageModalOpen, setIsManageModalOpen] = useState(false)
+
+  async function loadData() {
+    setIsLoading(true)
+    try {
+      const [usersData, statsData, metricsData] = await Promise.all([
+        getUsersWithSubscriptions(),
+        getSubscriptionStats(),
+        getBusinessMetrics(),
+      ])
+      setUsers(usersData)
+      setStats(statsData)
+      setMetrics({
+        mrr: metricsData.mrr,
+        arr: metricsData.arr,
+        churnRate: metricsData.churnRate,
+        conversionRate: metricsData.conversionRate,
+      })
+    } catch (error) {
+      console.error('Error loading subscriptions:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
-    async function loadData() {
-      setIsLoading(true)
-      try {
-        const [usersData, statsData] = await Promise.all([
-          getUsersWithSubscriptions(),
-          getSubscriptionStats(),
-        ])
-        setUsers(usersData)
-        setStats(statsData)
-      } catch (error) {
-        console.error('Error loading subscriptions:', error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
     loadData()
   }, [])
+  
+  function handleManageUser(user: UserWithSubscription) {
+    setSelectedUser(user)
+    setIsManageModalOpen(true)
+  }
+  
+  function handleSubscriptionUpdated() {
+    // Recargar datos después de actualizar una suscripción
+    loadData()
+  }
 
   const filteredUsers = users.filter(user => {
-    const plan = user.subscription?.plan || 'FREE'
+    const plan = (user.subscription?.plan?.toUpperCase() || 'FREE') as SubscriptionPlan
     if (filter !== 'all' && plan !== filter) return false
     if (search) {
       const searchLower = search.toLowerCase()
@@ -72,6 +118,7 @@ export function SubscriptionsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Suscripciones</h1>
@@ -94,74 +141,103 @@ export function SubscriptionsPage() {
         </div>
       ) : (
         <>
-          {/* Stats Cards */}
-          <div className="grid gap-4 md:grid-cols-4">
+          {/* Revenue Metrics */}
+          {metrics && (
+            <div className="grid gap-4 md:grid-cols-4">
+              <Card className="bg-gradient-to-br from-primary-500 to-primary-600 text-white border-0">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-primary-100">MRR</CardTitle>
+                  <DollarSign className="h-5 w-5 text-primary-200" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold">{formatCurrency(metrics.mrr)}</div>
+                  <p className="text-xs text-primary-200 mt-1 flex items-center gap-1">
+                    <ArrowUpRight className="h-3 w-3" />
+                    +12% vs mes anterior
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-emerald-100">ARR</CardTitle>
+                  <TrendingUp className="h-5 w-5 text-emerald-200" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold">{formatCurrency(metrics.arr)}</div>
+                  <p className="text-xs text-emerald-200 mt-1">Proyección anual</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-slate-500">Churn Rate</CardTitle>
+                  <ArrowDownRight className="h-5 w-5 text-red-400" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-slate-900">{metrics.churnRate.toFixed(1)}%</div>
+                  <p className="text-xs text-slate-500 mt-1">Cancelaciones este mes</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-slate-500">Conversión</CardTitle>
+                  <CheckCircle className="h-5 w-5 text-green-400" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-slate-900">{metrics.conversionRate.toFixed(1)}%</div>
+                  <p className="text-xs text-slate-500 mt-1">Trial → Pago</p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Plan Stats Cards */}
+          <div className="grid gap-4 md:grid-cols-5">
             <Card 
               className={`cursor-pointer transition-all ${filter === 'all' ? 'ring-2 ring-primary-500' : ''}`}
               onClick={() => setFilter('all')}
             >
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-slate-500">Total Usuarios</CardTitle>
+                <CardTitle className="text-sm font-medium text-slate-500">Total</CardTitle>
                 <Users className="h-4 w-4 text-slate-400" />
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-slate-900">{stats?.total ?? 0}</div>
+                <p className="text-xs text-slate-500 mt-1">{stats?.active ?? 0} activos</p>
               </CardContent>
             </Card>
 
-            <Card 
-              className={`cursor-pointer transition-all ${filter === 'FREE' ? 'ring-2 ring-primary-500' : ''}`}
-              onClick={() => setFilter('FREE')}
-            >
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-slate-500">Plan Free</CardTitle>
-                <div className="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center">
-                  <CreditCard className="h-4 w-4 text-slate-600" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-slate-900">{stats?.free ?? 0}</div>
-                <p className="text-xs text-slate-500 mt-1">
-                  {stats?.total ? Math.round((stats.free / stats.total) * 100) : 0}% del total
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card 
-              className={`cursor-pointer transition-all border-primary-200 bg-primary-50/50 ${filter === 'PRO' ? 'ring-2 ring-primary-500' : ''}`}
-              onClick={() => setFilter('PRO')}
-            >
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-primary-600">Plan Pro</CardTitle>
-                <div className="h-8 w-8 rounded-lg bg-primary-100 flex items-center justify-center">
-                  <TrendingUp className="h-4 w-4 text-primary-600" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-primary-700">{stats?.pro ?? 0}</div>
-                <p className="text-xs text-primary-600 mt-1">
-                  {stats?.total ? Math.round((stats.pro / stats.total) * 100) : 0}% del total
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card 
-              className={`cursor-pointer transition-all border-green-200 bg-green-50/50 ${filter === 'ENTERPRISE' ? 'ring-2 ring-primary-500' : ''}`}
-              onClick={() => setFilter('ENTERPRISE')}
-            >
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-green-600">Plan Enterprise</CardTitle>
-                <div className="h-8 w-8 rounded-lg bg-green-100 flex items-center justify-center">
-                  <Crown className="h-4 w-4 text-green-600" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-green-700">{stats?.enterprise ?? 0}</div>
-                <p className="text-xs text-green-600 mt-1">
-                  {stats?.total ? Math.round((stats.enterprise / stats.total) * 100) : 0}% del total
-                </p>
-              </CardContent>
-            </Card>
+            {(['FREE', 'BASIC', 'PRO', 'HACIENDA'] as SubscriptionPlan[]).map((plan) => {
+              const Icon = planIcons[plan]
+              const count = stats ? stats[plan.toLowerCase() as keyof SubscriptionStats] as number : 0
+              const colors = PLAN_COLORS[plan]
+              const isSelected = filter === plan
+              
+              return (
+                <Card 
+                  key={plan}
+                  className={`cursor-pointer transition-all ${colors.border} ${isSelected ? 'ring-2 ring-primary-500' : ''}`}
+                  onClick={() => setFilter(plan)}
+                >
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className={`text-sm font-medium ${colors.text}`}>
+                      {PLAN_LABELS[plan]}
+                    </CardTitle>
+                    <div className={`h-8 w-8 rounded-lg ${colors.bg} flex items-center justify-center`}>
+                      <Icon className={`h-4 w-4 ${colors.text}`} />
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className={`text-3xl font-bold ${colors.text}`}>{count}</div>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {stats?.total ? Math.round((count / stats.total) * 100) : 0}% del total
+                    </p>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
 
           {/* Users List */}
@@ -169,7 +245,7 @@ export function SubscriptionsPage() {
             <CardHeader>
               <CardTitle>Usuarios con Suscripción</CardTitle>
               <CardDescription>
-                {filteredUsers.length} usuarios {filter !== 'all' ? `con plan ${filter}` : ''}
+                {filteredUsers.length} usuarios {filter !== 'all' ? `con plan ${PLAN_LABELS[filter]}` : ''}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -208,9 +284,10 @@ export function SubscriptionsPage() {
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {filteredUsers.map((user) => {
-                        const plan = user.subscription?.plan || 'FREE'
-                        const status = user.subscription?.status || 'active'
-                        const colors = planColors[plan] || planColors.FREE
+                        const plan = (user.subscription?.plan?.toUpperCase() || 'FREE') as SubscriptionPlan
+                        const status = user.subscription?.status || 'inactive'
+                        const colors = PLAN_COLORS[plan]
+                        const Icon = planIcons[plan]
                         
                         return (
                           <tr key={user.uid} className="hover:bg-slate-50">
@@ -227,14 +304,13 @@ export function SubscriptionsPage() {
                               </div>
                             </td>
                             <td className="py-4 px-4">
-                              <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${colors.bg} ${colors.text}`}>
-                                {plan === 'ENTERPRISE' && <Crown className="h-3 w-3" />}
-                                {plan === 'PRO' && <TrendingUp className="h-3 w-3" />}
-                                {plan}
+                              <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${colors.bg} ${colors.text}`}>
+                                <Icon className="h-3 w-3" />
+                                {PLAN_LABELS[plan]}
                               </span>
                             </td>
                             <td className="py-4 px-4">
-                              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${statusColors[status] || 'bg-slate-100 text-slate-700'}`}>
+                              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${STATUS_COLORS[status] || 'bg-slate-100 text-slate-700'}`}>
                                 {status === 'active' && <CheckCircle className="h-3 w-3" />}
                                 {status}
                               </span>
@@ -252,7 +328,11 @@ export function SubscriptionsPage() {
                               {formatDate(user.subscription?.endDate)}
                             </td>
                             <td className="py-4 px-4 text-right">
-                              <Button variant="outline" size="sm">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleManageUser(user)}
+                              >
                                 Gestionar
                               </Button>
                             </td>
@@ -266,6 +346,17 @@ export function SubscriptionsPage() {
             </CardContent>
           </Card>
         </>
+      )}
+      
+      {/* Modal de gestión de suscripción */}
+      {admin && (
+        <ManageSubscriptionModal
+          user={selectedUser}
+          open={isManageModalOpen}
+          onOpenChange={setIsManageModalOpen}
+          onSuccess={handleSubscriptionUpdated}
+          adminInfo={{ uid: admin.uid, email: admin.email }}
+        />
       )}
     </div>
   )

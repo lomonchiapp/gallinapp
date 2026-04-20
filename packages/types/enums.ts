@@ -87,7 +87,7 @@ export const enum TipoIngreso {
   OTRO = 'OTRO',
 }
 
-export const enum TipoIngresoIsraeli {
+export const enum TipoIngresoLevante {
   VENTA_POLLOS = 'VENTA_POLLOS',
   OTRO = 'OTRO',
 }

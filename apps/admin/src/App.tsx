@@ -11,6 +11,11 @@ import { LotesPage } from "@/pages/lotes"
 import { SubscriptionsPage } from "@/pages/subscriptions"
 import { AnalyticsPage } from "@/pages/analytics"
 import { NotificationsPage } from "@/pages/notifications"
+import { BusinessPage } from "@/pages/business"
+import { SupportPage } from "@/pages/support"
+import { BlockedFarmsPage } from "@/pages/farms/blocked"
+import { AuditPage } from "@/pages/audit"
+import { PushNotificationsPage } from "@/pages/notifications/push"
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { admin, isInitialized } = useAuthStore()
@@ -75,13 +80,18 @@ export default function App() {
           }
         >
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/business" element={<BusinessPage />} />
           <Route path="/users" element={<UsersPage />} />
           <Route path="/farms" element={<FarmsPage />} />
+          <Route path="/farms/blocked" element={<BlockedFarmsPage />} />
           <Route path="/farms/:id" element={<FarmDetailPage />} />
           <Route path="/lotes" element={<LotesPage />} />
           <Route path="/subscriptions" element={<SubscriptionsPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/notifications/push" element={<PushNotificationsPage />} />
+          <Route path="/support" element={<SupportPage />} />
+          <Route path="/audit" element={<AuditPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

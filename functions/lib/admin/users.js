@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.updateUserSubscription = exports.createUser = void 0;
+exports.deleteMyAccount = exports.deleteUser = exports.updateUserSubscription = exports.createUser = void 0;
 const https_1 = require("firebase-functions/v2/https");
 const auth_1 = require("firebase-admin/auth");
 const firestore_1 = require("firebase-admin/firestore");
@@ -205,6 +205,135 @@ exports.deleteUser = (0, https_1.onCall)(async (request) => {
         if (error instanceof https_1.HttpsError)
             throw error;
         throw new https_1.HttpsError('internal', 'Error al eliminar usuario');
+    }
+});
+/**
+ * Self-service account deletion (callable by the account owner)
+ * Required by Apple App Store and Google Play policies
+ *
+ * Steps:
+ * 1. Remove user from all farms where they are a collaborator
+ * 2. For farms they own: transfer or delete depending on collaborators
+ * 3. Delete user document and subcollections in Firestore
+ * 4. Cancel any active subscriptions via RevenueCat flag
+ * 5. Delete Firebase Auth account
+ */
+exports.deleteMyAccount = (0, https_1.onCall)(async (request) => {
+    if (!request.auth) {
+        throw new https_1.HttpsError('unauthenticated', 'Debes estar autenticado');
+    }
+    const userId = request.auth.uid;
+    const { confirmEmail } = request.data;
+    if (!confirmEmail) {
+        throw new https_1.HttpsError('invalid-argument', 'Debes confirmar tu email');
+    }
+    try {
+        const userRecord = await auth.getUser(userId);
+        if (userRecord.email?.toLowerCase() !== confirmEmail.toLowerCase()) {
+            throw new https_1.HttpsError('invalid-argument', 'El email no coincide con tu cuenta');
+        }
+        const userRef = db.collection('users').doc(userId);
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            throw new https_1.HttpsError('not-found', 'Usuario no encontrado');
+        }
+        // 1. Find all farms where user is owner or collaborator
+        const ownedFarmsSnap = await db.collection('farms')
+            .where('ownerId', '==', userId)
+            .get();
+        const collabFarmsSnap = await db.collection('farms')
+            .where('collaboratorIds', 'array-contains', userId)
+            .get();
+        const BATCH_LIMIT = 400;
+        let batch = db.batch();
+        let opCount = 0;
+        const commitIfNeeded = async () => {
+            if (opCount >= BATCH_LIMIT) {
+                await batch.commit();
+                batch = db.batch();
+                opCount = 0;
+            }
+        };
+        // 2. Remove user from collaborator farms
+        for (const farmDoc of collabFarmsSnap.docs) {
+            batch.update(farmDoc.ref, {
+                collaboratorIds: firestore_1.FieldValue.arrayRemove(userId),
+                updatedAt: firestore_1.FieldValue.serverTimestamp(),
+            });
+            opCount++;
+            await commitIfNeeded();
+            // Remove from farm members subcollection if exists
+            const memberRef = farmDoc.ref.collection('members').doc(userId);
+            const memberDoc = await memberRef.get();
+            if (memberDoc.exists) {
+                batch.delete(memberRef);
+                opCount++;
+                await commitIfNeeded();
+            }
+        }
+        // 3. Handle owned farms
+        for (const farmDoc of ownedFarmsSnap.docs) {
+            const farmData = farmDoc.data();
+            const collabIds = farmData.collaboratorIds || [];
+            const otherCollabs = collabIds.filter((id) => id !== userId);
+            if (otherCollabs.length > 0) {
+                // Transfer ownership to the first collaborator
+                const newOwnerId = otherCollabs[0];
+                batch.update(farmDoc.ref, {
+                    ownerId: newOwnerId,
+                    collaboratorIds: firestore_1.FieldValue.arrayRemove(userId),
+                    updatedAt: firestore_1.FieldValue.serverTimestamp(),
+                });
+                opCount++;
+                await commitIfNeeded();
+            }
+            else {
+                // No collaborators — soft-delete the farm
+                batch.update(farmDoc.ref, {
+                    isActive: false,
+                    deletedAt: firestore_1.FieldValue.serverTimestamp(),
+                    deletedBy: userId,
+                    updatedAt: firestore_1.FieldValue.serverTimestamp(),
+                });
+                opCount++;
+                await commitIfNeeded();
+            }
+        }
+        // 4. Mark subscription as cancelled in user doc
+        batch.update(userRef, {
+            'subscription.status': 'cancelled',
+            'subscription.cancelledAt': firestore_1.FieldValue.serverTimestamp(),
+            'subscription.cancelReason': 'account_deleted',
+            isActive: false,
+            deletedAt: firestore_1.FieldValue.serverTimestamp(),
+            updatedAt: firestore_1.FieldValue.serverTimestamp(),
+        });
+        opCount++;
+        // 5. Commit pending writes
+        await batch.commit();
+        // 6. Delete Firebase Auth account (this invalidates all sessions)
+        await auth.deleteUser(userId);
+        // 7. Audit log
+        await db.collection('admin_notifications').add({
+            type: 'user_self_deleted',
+            userId,
+            userEmail: userRecord.email,
+            timestamp: firestore_1.FieldValue.serverTimestamp(),
+            details: {
+                ownedFarmsCount: ownedFarmsSnap.size,
+                collabFarmsCount: collabFarmsSnap.size,
+            },
+        });
+        return {
+            success: true,
+            message: 'Tu cuenta ha sido eliminada permanentemente',
+        };
+    }
+    catch (error) {
+        console.error('Error in deleteMyAccount:', error);
+        if (error instanceof https_1.HttpsError)
+            throw error;
+        throw new https_1.HttpsError('internal', 'No se pudo eliminar la cuenta. Contacta a soporte@gallinapp.com');
     }
 });
 //# sourceMappingURL=users.js.map
