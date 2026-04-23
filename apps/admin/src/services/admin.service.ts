@@ -1068,7 +1068,9 @@ export async function updateUserSubscription(
   const previousSubscription = userData.subscription || { plan: 'FREE', status: 'inactive' }
   
   // Preparar datos de suscripción para Firestore
-  const subscriptionUpdate: Record<string, unknown> = {
+  // Tipado any: Firestore espera UpdateData<T>, pero usamos dot notation con
+  // campos anidados dinamicos de subscription.*
+  const subscriptionUpdate: Record<string, any> = {
     'subscription.plan': data.plan,
     'subscription.status': data.status,
     'subscription.updatedAt': Timestamp.now(),
@@ -1241,7 +1243,7 @@ export async function cancelUserSubscription(
   
   const userData = userDoc.data()
   
-  const updateData: Record<string, unknown> = {
+  const updateData: Record<string, any> = {
     'subscription.updatedAt': Timestamp.now(),
     'subscription.updatedBy': adminInfo.uid,
     'subscription.cancelReason': reason,

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
-import { 
-  Loader2, DollarSign, TrendingUp, TrendingDown, Users, Building2, 
-  ArrowUpRight, ArrowDownRight, BarChart3, PieChart, Activity,
+import {
+  Loader2, DollarSign, TrendingUp, Users, Building2,
+  ArrowUpRight, ArrowDownRight, PieChart, Activity,
   CreditCard, RefreshCw, AlertTriangle
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"

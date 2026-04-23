@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { Link } from "react-router-dom"
-import { 
-  Building2, Users, CreditCard, TrendingUp, Loader2, Egg, 
+import {
+  Building2, Users, CreditCard, Loader2, Egg,
   DollarSign, ArrowUpRight, ArrowDownRight, Activity,
   Drumstick, Bird, ChevronRight
 } from "lucide-react"

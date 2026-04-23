@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react"
-import { 
-  Loader2, Search, Filter, Plus, MessageSquare, Clock, CheckCircle, 
-  AlertCircle, User, Building2, Calendar, MoreHorizontal, ArrowUpRight
+import { useState } from "react"
+import {
+  Loader2, Search, Plus, MessageSquare, Clock, CheckCircle,
+  AlertCircle, User, Building2, Calendar, ArrowUpRight
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -116,11 +116,11 @@ function formatTimeAgo(date: Date): string {
 }
 
 export function SupportPage() {
-  const [tickets, setTickets] = useState<SupportTicket[]>(mockTickets)
-  const [isLoading, setIsLoading] = useState(false)
+  const [tickets] = useState<SupportTicket[]>(mockTickets)
+  const [isLoading] = useState(false)
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState<TicketStatus | 'all'>('all')
-  const [filterPriority, setFilterPriority] = useState<TicketPriority | 'all'>('all')
+  const [filterPriority] = useState<TicketPriority | 'all'>('all')
 
   const stats = {
     open: tickets.filter(t => t.status === 'open').length,

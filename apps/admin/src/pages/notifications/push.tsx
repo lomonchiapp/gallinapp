@@ -1,7 +1,7 @@
 import { useState } from "react"
-import { 
-  Bell, Send, Users, Building2, CreditCard, Calendar, Clock,
-  Smartphone, Globe, Filter, ChevronDown, Loader2, CheckCircle
+import {
+  Bell, Send, Users, CreditCard, Calendar, Clock,
+  Smartphone, Globe, Loader2, CheckCircle
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -46,7 +46,7 @@ const mockCampaigns: PushCampaign[] = [
 ]
 
 export function PushNotificationsPage() {
-  const [campaigns, setCampaigns] = useState<PushCampaign[]>(mockCampaigns)
+  const [campaigns] = useState<PushCampaign[]>(mockCampaigns)
   const [isCreating, setIsCreating] = useState(false)
   const [isSending, setIsSending] = useState(false)
   

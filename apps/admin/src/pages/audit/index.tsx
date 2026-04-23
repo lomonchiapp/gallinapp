@@ -1,13 +1,12 @@
-import { useState, useEffect } from "react"
-import { 
-  Loader2, Shield, Search, Filter, User, Building2, Calendar,
+import { useState } from "react"
+import {
+  Loader2, Shield, Search, User, Building2, Calendar,
   CreditCard, Settings, UserPlus, UserMinus, Trash2, Edit, Eye,
   Download, RefreshCw
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 type AuditAction = 
   | 'user_created' 
@@ -149,8 +148,8 @@ function formatDateTime(date: Date): string {
 }
 
 export function AuditPage() {
-  const [logs, setLogs] = useState<AuditLog[]>(mockLogs)
-  const [isLoading, setIsLoading] = useState(false)
+  const [logs] = useState<AuditLog[]>(mockLogs)
+  const [isLoading] = useState(false)
   const [search, setSearch] = useState('')
   const [filterAction, setFilterAction] = useState<AuditAction | 'all'>('all')
 

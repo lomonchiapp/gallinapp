@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
-import { 
+import {
   Loader2, TrendingUp, Users, Building2, Calendar, Activity,
-  BarChart3, ArrowUpRight, ArrowDownRight, Eye, Clock, Target,
+  BarChart3, ArrowUpRight, ArrowDownRight, Target,
   Egg, RefreshCw
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -69,9 +69,9 @@ export function AnalyticsPage() {
     loadUsers,
   } = useAdminStore()
 
-  const [engagement, setEngagement] = useState<EngagementMetrics>(mockEngagement)
-  const [moduleUsage, setModuleUsage] = useState<ModuleUsage[]>(mockModuleUsage)
-  const [funnel, setFunnel] = useState<FunnelStep[]>(mockFunnel)
+  const [engagement] = useState<EngagementMetrics>(mockEngagement)
+  const [moduleUsage] = useState<ModuleUsage[]>(mockModuleUsage)
+  const [funnel] = useState<FunnelStep[]>(mockFunnel)
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d')
 
   useEffect(() => {

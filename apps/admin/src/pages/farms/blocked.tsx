@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react"
-import { 
-  Loader2, AlertTriangle, Building2, User, Mail, Calendar, 
-  CreditCard, RefreshCw, Send, Clock, DollarSign, MoreHorizontal
+import {
+  Loader2, AlertTriangle, Building2, User, Mail, Calendar,
+  CreditCard, RefreshCw, Send, Clock, DollarSign
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getBlockedFarms, type BlockedFarm } from "@/services/admin.service"
-import { PLAN_LABELS, PLAN_COLORS, type SubscriptionPlan } from "@/types/subscription"
+import { PLAN_LABELS, type SubscriptionPlan } from "@/types/subscription"
 
 function formatDate(date?: Date): string {
   if (!date) return '—'
