@@ -50,6 +50,10 @@ const rateLimit_1 = require("./middleware/rateLimit");
 __exportStar(require("./admin/users"), exports);
 // Admin notifications
 __exportStar(require("./admin/notifications"), exports);
+// Bootstrap del primer admin + helper hasAnyAdmin
+__exportStar(require("./admin/bootstrap"), exports);
+// Sync globalRole → custom claims
+__exportStar(require("./admin/claims-sync"), exports);
 // ============================================================================
 // VENTAS PRO FUNCTIONS
 // ============================================================================

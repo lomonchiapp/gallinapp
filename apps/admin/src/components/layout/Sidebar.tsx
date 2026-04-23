@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom"
-import { 
+import {
   LayoutDashboard, Building2, Users, CreditCard, BarChart3, LogOut, ChevronLeft, Egg,
   DollarSign, Headphones, Bell, Shield, AlertTriangle
 } from "lucide-react"
@@ -8,6 +8,7 @@ import { Logo } from "@/components/shared/Logo"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useAuthStore } from "@/stores"
+import { canAccessRoute } from "@/lib/permissions"
 import { useState } from "react"
 
 const navSections = [
@@ -42,7 +43,8 @@ const navSections = [
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const navigate = useNavigate()
-  const { signOut } = useAuthStore()
+  const { signOut, admin } = useAuthStore()
+  const role = admin?.globalRole
 
   const handleSignOut = async () => {
     await signOut()
@@ -63,31 +65,51 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 overflow-y-auto p-2 space-y-4">
-        {navSections.map((section) => (
-          <div key={section.label} className="space-y-1">
-            {!collapsed && (
-              <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                {section.label}
-              </div>
-            )}
-            {section.items.map((item) => (
-              <NavLink
-                key={item.name}
-                to={item.href}
-                className={({ isActive }) => cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  isActive ? "bg-primary-500 text-white" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
-                  collapsed && "justify-center px-2"
-                )}
-                title={collapsed ? item.name : undefined}
-              >
-                <item.icon className="h-5 w-5 shrink-0" />
-                {!collapsed && <span>{item.name}</span>}
-              </NavLink>
-            ))}
-          </div>
-        ))}
+        {navSections.map((section) => {
+          // Filtrar items que el rol no puede ver
+          const visibleItems = section.items.filter((item) => canAccessRoute(role, item.href))
+          if (visibleItems.length === 0) return null
+
+          return (
+            <div key={section.label} className="space-y-1">
+              {!collapsed && (
+                <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  {section.label}
+                </div>
+              )}
+              {visibleItems.map((item) => (
+                <NavLink
+                  key={item.name}
+                  to={item.href}
+                  className={({ isActive }) => cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    isActive ? "bg-primary-500 text-white" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+                    collapsed && "justify-center px-2"
+                  )}
+                  title={collapsed ? item.name : undefined}
+                >
+                  <item.icon className="h-5 w-5 shrink-0" />
+                  {!collapsed && <span>{item.name}</span>}
+                </NavLink>
+              ))}
+            </div>
+          )
+        })}
       </nav>
+
+      <Separator />
+
+      {!collapsed && admin && (
+        <div className="px-4 py-3">
+          <div className="text-xs font-medium text-slate-500">Conectado como</div>
+          <div className="mt-1 truncate text-sm font-semibold text-slate-900">
+            {admin.displayName}
+          </div>
+          <div className="mt-0.5 inline-flex items-center rounded-full bg-primary-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-700">
+            {admin.globalRole}
+          </div>
+        </div>
+      )}
 
       <Separator />
 

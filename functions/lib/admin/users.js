@@ -75,6 +75,37 @@ exports.createUser = (0, https_1.onCall)(async (request) => {
             createdBy: request.auth.uid,
         };
         await db.collection('users').doc(userRecord.uid).set(userData);
+        // Si este usuario es un admin, setear custom claims inmediatamente para
+        // que no tenga que esperar al trigger onWrite (mejora UX de primer login).
+        if (globalRole && ['ADMIN', 'SUPER_ADMIN', 'SUPPORT', 'ANALYST'].includes(globalRole)) {
+            const claims = { role: globalRole };
+            if (globalRole === 'SUPER_ADMIN') {
+                claims.super_admin = true;
+                claims.admin = true;
+            }
+            else if (globalRole === 'ADMIN') {
+                claims.admin = true;
+            }
+            try {
+                await auth.setCustomUserClaims(userRecord.uid, claims);
+            }
+            catch (claimsErr) {
+                console.warn('createUser: setCustomUserClaims failed (will retry via trigger)', claimsErr);
+            }
+        }
+        // Audit log
+        try {
+            await db.collection('admin_audit_log').add({
+                action: 'user_created',
+                actorUid: request.auth.uid,
+                targetUid: userRecord.uid,
+                details: { email, displayName, globalRole: globalRole || null },
+                timestamp: firestore_1.FieldValue.serverTimestamp(),
+            });
+        }
+        catch (auditErr) {
+            console.warn('createUser: audit log failed (non-fatal)', auditErr);
+        }
         // Create admin notification
         await db.collection('admin_notifications').add({
             type: 'user_created',

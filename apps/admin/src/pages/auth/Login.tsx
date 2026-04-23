@@ -1,12 +1,78 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Eye, EyeOff, AlertCircle, Shield, Lock } from "lucide-react"
+import {
+  Eye,
+  EyeOff,
+  AlertCircle,
+  Shield,
+  Lock,
+  Ban,
+  WifiOff,
+  Clock,
+  KeyRound,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Logo } from "@/components/shared/Logo"
 import { useAuthStore } from "@/stores"
+import type { AuthErrorCode } from "@/stores/authStore"
+
+interface ErrorVisual {
+  title: string
+  icon: typeof AlertCircle
+  tone: 'danger' | 'warning' | 'info'
+}
+
+const ERROR_VISUALS: Record<AuthErrorCode, ErrorVisual> = {
+  'invalid-credentials': {
+    title: 'Credenciales incorrectas',
+    icon: KeyRound,
+    tone: 'danger',
+  },
+  'invalid-email': {
+    title: 'Correo inválido',
+    icon: AlertCircle,
+    tone: 'warning',
+  },
+  'user-disabled': {
+    title: 'Cuenta deshabilitada',
+    icon: Ban,
+    tone: 'danger',
+  },
+  'too-many-requests': {
+    title: 'Demasiados intentos',
+    icon: Clock,
+    tone: 'warning',
+  },
+  'network-error': {
+    title: 'Sin conexión',
+    icon: WifiOff,
+    tone: 'warning',
+  },
+  'not-authorized': {
+    title: 'Acceso restringido',
+    icon: Shield,
+    tone: 'danger',
+  },
+  'account-not-found': {
+    title: 'Cuenta no encontrada',
+    icon: AlertCircle,
+    tone: 'warning',
+  },
+  unknown: {
+    title: 'Error inesperado',
+    icon: AlertCircle,
+    tone: 'danger',
+  },
+}
+
+const TONE_CLASSES: Record<ErrorVisual['tone'], string> = {
+  danger: 'border-red-200 bg-red-50 text-red-700',
+  warning: 'border-amber-200 bg-amber-50 text-amber-800',
+  info: 'border-blue-200 bg-blue-50 text-blue-700',
+}
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -27,6 +93,9 @@ export function LoginPage() {
       // Error handled in store
     }
   }
+
+  const visual = error ? ERROR_VISUALS[error.code] : null
+  const ErrorIcon = visual?.icon ?? AlertCircle
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
@@ -78,12 +147,33 @@ export function LoginPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {error && (
-                <div className="mb-6 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-red-600">
-                  <AlertCircle className="h-5 w-5 mt-0.5 shrink-0" />
+              {error && visual && (
+                <div
+                  role="alert"
+                  className={`mb-6 flex items-start gap-3 rounded-lg border p-4 ${TONE_CLASSES[visual.tone]}`}
+                >
+                  <ErrorIcon className="h-5 w-5 mt-0.5 shrink-0" />
                   <div className="text-sm">
-                    <p className="font-medium">Error de autenticación</p>
-                    <p className="mt-1 opacity-90">{error}</p>
+                    <p className="font-semibold">{visual.title}</p>
+                    <p className="mt-1 opacity-90">{error.message}</p>
+                    {error.code === 'not-authorized' && (
+                      <p className="mt-2 text-xs opacity-75">
+                        Si crees que esto es un error, contacta al equipo en{' '}
+                        <a
+                          href="mailto:soporte@gallinapp.com"
+                          className="underline hover:opacity-100"
+                        >
+                          soporte@gallinapp.com
+                        </a>
+                        .
+                      </p>
+                    )}
+                    {error.code === 'too-many-requests' && (
+                      <p className="mt-2 text-xs opacity-75">
+                        Por seguridad, Firebase bloquea temporalmente intentos repetidos. Intenta de
+                        nuevo en unos minutos.
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
@@ -99,6 +189,7 @@ export function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     autoComplete="email"
+                    disabled={isLoading}
                   />
                 </div>
 
@@ -114,11 +205,14 @@ export function LoginPage() {
                       required
                       autoComplete="current-password"
                       className="pr-10"
+                      disabled={isLoading}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 disabled:opacity-50"
+                      disabled={isLoading}
+                      aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -130,9 +224,9 @@ export function LoginPage() {
                   className="w-full"
                   size="lg"
                   isLoading={isLoading}
-                  disabled={!email || !password}
+                  disabled={!email || !password || isLoading}
                 >
-                  Iniciar Sesión
+                  {isLoading ? 'Verificando…' : 'Iniciar Sesión'}
                 </Button>
               </form>
 

@@ -16,6 +16,12 @@ export * from './admin/users';
 // Admin notifications
 export * from './admin/notifications';
 
+// Bootstrap del primer admin + helper hasAnyAdmin
+export * from './admin/bootstrap';
+
+// Sync globalRole → custom claims
+export * from './admin/claims-sync';
+
 // ============================================================================
 // VENTAS PRO FUNCTIONS
 // ============================================================================
