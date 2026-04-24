@@ -1066,7 +1066,30 @@ export async function updateUserSubscription(
   
   const userData = userDoc.data()
   const previousSubscription = userData.subscription || { plan: 'FREE', status: 'inactive' }
-  
+
+  // Helper: calcular endDate automatico segun el periodo cuando el admin no lo provee.
+  // Esto es CRITICO: el cliente mobile ignora suscripciones con endDate en el pasado y
+  // cae a RevenueCat (que devuelve FREE), por lo que un plan promovido sin endDate
+  // valido mantiene los modulos bloqueados.
+  const computeAutoEndDate = (period: string | undefined, startFrom: Date): Date => {
+    const base = new Date(startFrom)
+    switch (period) {
+      case 'monthly':
+        base.setMonth(base.getMonth() + 1)
+        break
+      case 'quarterly':
+        base.setMonth(base.getMonth() + 3)
+        break
+      case 'annual':
+        base.setFullYear(base.getFullYear() + 1)
+        break
+      default:
+        // Sin periodo especificado (ej. cortesia admin): vigencia larga por defecto (1 año)
+        base.setFullYear(base.getFullYear() + 1)
+    }
+    return base
+  }
+
   // Preparar datos de suscripción para Firestore
   // Tipado any: Firestore espera UpdateData<T>, pero usamos dot notation con
   // campos anidados dinamicos de subscription.*
@@ -1076,20 +1099,28 @@ export async function updateUserSubscription(
     'subscription.updatedAt': Timestamp.now(),
     'subscription.updatedBy': adminInfo.uid,
   }
-  
+
   if (data.period) {
     subscriptionUpdate['subscription.period'] = data.period
   }
-  
-  if (data.startDate) {
-    subscriptionUpdate['subscription.startDate'] = Timestamp.fromDate(data.startDate)
+
+  // startDate: si el admin no lo pasa y se promueve a un plan pagado, usar ahora
+  const effectiveStartDate =
+    data.startDate ?? (data.plan !== 'FREE' ? new Date() : undefined)
+  if (effectiveStartDate) {
+    subscriptionUpdate['subscription.startDate'] = Timestamp.fromDate(effectiveStartDate)
   }
-  
-  if (data.endDate) {
-    subscriptionUpdate['subscription.endDate'] = Timestamp.fromDate(data.endDate)
-  } else if (data.plan === 'FREE') {
+
+  if (data.plan === 'FREE') {
     // Si se cambia a FREE, quitar fecha de vencimiento
     subscriptionUpdate['subscription.endDate'] = null
+  } else if (data.endDate) {
+    subscriptionUpdate['subscription.endDate'] = Timestamp.fromDate(data.endDate)
+  } else {
+    // Plan pagado sin endDate explicito: calcular uno automatico
+    const startFrom = effectiveStartDate ?? new Date()
+    const autoEnd = computeAutoEndDate(data.period, startFrom)
+    subscriptionUpdate['subscription.endDate'] = Timestamp.fromDate(autoEnd)
   }
   
   if (data.trialEndsAt) {

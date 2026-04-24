@@ -356,6 +356,14 @@ export function ManageSubscriptionModal({
                     />
                   </div>
                 </div>
+
+                {!endDate && (
+                  <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+                    <strong>Sin fecha de vencimiento:</strong> se calculará automáticamente según el periodo (
+                    {period === 'monthly' ? '+1 mes' : period === 'quarterly' ? '+3 meses' : '+1 año'}
+                    ). Si no se fija un vencimiento válido, la app móvil tratará la suscripción como expirada.
+                  </div>
+                )}
               </>
             )}
 
